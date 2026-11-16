@@ -4,6 +4,7 @@ import { requireProfile } from "@/lib/auth";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Notice, PageHeader } from "@/components/ui";
 import { formatDateTime } from "@/lib/labels";
+import { ENQUIRY_SERVICES } from "@/lib/site-shared";
 
 const STATUSES = [
   { value: "new", label: "New", cls: "bg-blue-100 text-blue-800" },
@@ -11,6 +12,33 @@ const STATUSES = [
   { value: "converted", label: "Became a customer", cls: "bg-emerald-100 text-emerald-800" },
   { value: "closed", label: "Closed", cls: "bg-stone-200 text-stone-600" },
 ];
+
+const SOURCES = [
+  { value: "phone", label: "Phone call" },
+  { value: "email", label: "Email" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "in_person", label: "In person" },
+  { value: "referral", label: "Referral" },
+  { value: "other", label: "Other" },
+  { value: "website", label: "Website" },
+];
+
+async function addEnquiry(formData: FormData) {
+  "use server";
+  const { supabase, profile } = await requireProfile(["office"]);
+  const get = (k: string) => String(formData.get(k) ?? "").trim() || null;
+  const { error } = await supabase.from("enquiries").insert({
+    name: get("name"), phone: get("phone"), email: get("email"),
+    service: get("service"), postcode: get("postcode")?.toUpperCase() ?? null,
+    message: get("message") ?? "(no details)", source: get("source") ?? "phone",
+    office_notes: get("office_notes"), created_by: profile.id,
+  });
+  if (error) {
+    const msg = error.message.includes("enquiry_has_contact") ? "Add a phone number or email." : error.message;
+    redirect(`/office/enquiries?add=1&error=${encodeURIComponent(msg)}`);
+  }
+  redirect("/office/enquiries?added=1");
+}
 
 async function updateEnquiry(formData: FormData) {
   "use server";
@@ -37,8 +65,8 @@ async function convertToCustomer(formData: FormData) {
   redirect(`/office/customers/${c!.id}`);
 }
 
-export default async function Enquiries({ searchParams }: { searchParams: Promise<{ tab?: string; error?: string }> }) {
-  const { tab = "open", error } = await searchParams;
+export default async function Enquiries({ searchParams }: { searchParams: Promise<{ tab?: string; error?: string; add?: string; added?: string }> }) {
+  const { tab = "open", error, add, added } = await searchParams;
   const { supabase } = await requireProfile(["office"]);
   let q = supabase.from("enquiries").select("*").order("created_at", { ascending: false }).limit(200);
   q = tab === "open" ? q.in("status", ["new", "contacted"]) : q.in("status", ["converted", "closed"]);
@@ -46,8 +74,32 @@ export default async function Enquiries({ searchParams }: { searchParams: Promis
 
   return (
     <>
-      <PageHeader title="Website enquiries" />
+      <PageHeader title="Enquiries" action={!add && <Link href="/office/enquiries?add=1" className="btn-gold">+ Add enquiry</Link>} />
       {error && <Notice tone="error">{error}</Notice>}
+      {added && <Notice tone="success">Enquiry added.</Notice>}
+      {add && (
+        <form action={addEnquiry} className="card mb-6 grid gap-3 md:grid-cols-2">
+          <h2 className="text-lg font-semibold md:col-span-2">Add an enquiry</h2>
+          <div><label className="label">Name</label><input className="input" name="name" required autoFocus /></div>
+          <div>
+            <label className="label">How did they get in touch?</label>
+            <select className="input" name="source" defaultValue="phone">{SOURCES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}</select>
+          </div>
+          <div><label className="label">Phone</label><input className="input" name="phone" type="tel" /></div>
+          <div><label className="label">Email</label><input className="input" name="email" type="email" /></div>
+          <div>
+            <label className="label">What do they need?</label>
+            <select className="input" name="service" defaultValue=""><option value="">Choose…</option>{ENQUIRY_SERVICES.map((x) => <option key={x}>{x}</option>)}</select>
+          </div>
+          <div><label className="label">Postcode</label><input className="input" name="postcode" /></div>
+          <div className="md:col-span-2"><label className="label">Details</label><textarea className="input min-h-24" name="message" placeholder="What they asked for" /></div>
+          <div className="md:col-span-2"><label className="label">Follow-up notes</label><input className="input" name="office_notes" placeholder="e.g. Call back Tuesday after 2pm" /></div>
+          <div className="flex gap-2 md:col-span-2">
+            <SubmitButton>Save enquiry</SubmitButton>
+            <Link href="/office/enquiries" className="btn-outline">Cancel</Link>
+          </div>
+        </form>
+      )}
       <div className="mb-4 flex gap-2">
         {[["open", "Open"], ["done", "Done"]].map(([k, l]) => (
           <Link key={k} href={`/office/enquiries?tab=${k}`} className={`rounded-full px-3 py-1.5 text-sm ${tab === k ? "bg-brand-green text-white" : "border border-stone-200 bg-white"}`}>{l}</Link>
@@ -62,7 +114,7 @@ export default async function Enquiries({ searchParams }: { searchParams: Promis
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
                   <div className="text-base font-semibold">{e.name}</div>
-                  <div className="text-xs text-stone-500">{formatDateTime(e.created_at)}{e.service ? ` · ${e.service}` : ""}{e.postcode ? ` · ${e.postcode}` : ""}</div>
+                  <div className="text-xs text-stone-500">{formatDateTime(e.created_at)} · {SOURCES.find((x) => x.value === e.source)?.label ?? e.source}{e.service ? ` · ${e.service}` : ""}{e.postcode ? ` · ${e.postcode}` : ""}</div>
                 </div>
                 <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${st.cls}`}>{st.label}</span>
               </div>
