@@ -97,7 +97,7 @@ export default async function Home() {
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {photos.map((p) => (
-              <figure key={p.id} className="overflow-hidden rounded-xl border border-stone-200 shadow-sm">
+              <figure key={p.id} className="overflow-hidden rounded-xl border border-brand-line shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={galleryUrl(p.storage_path)} alt={p.caption ?? "FogoTech installation"} loading="lazy" className="aspect-[4/3] w-full object-cover" />
                 {p.caption && <figcaption className="px-4 py-3 text-sm text-stone-700">{p.caption}</figcaption>}

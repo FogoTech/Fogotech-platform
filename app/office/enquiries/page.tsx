@@ -230,7 +230,7 @@ function FollowUpFields({ e, idPrefix, staff }: { e?: Enquiry; idPrefix: string;
         <div className="label">Actions</div>
         <div className="grid gap-2 sm:grid-cols-2">
           {ACTIONS.map((a) => (
-            <label key={a.value} htmlFor={`${idPrefix}-${a.value}`} className="flex items-center gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm">
+            <label key={a.value} htmlFor={`${idPrefix}-${a.value}`} className="flex items-center gap-2 rounded-lg border border-brand-line px-3 py-2 text-sm">
               <input id={`${idPrefix}-${a.value}`} type="checkbox" name="actions" value={a.value} defaultChecked={e?.actions?.includes(a.value)} className="h-4 w-4 accent-[#1f5a3a]" />
               {a.label}
             </label>
@@ -277,7 +277,7 @@ export default async function Enquiries({ searchParams }: {
     tab === "open" ? (PRIORITY_RANK[a.priority] ?? 9) - (PRIORITY_RANK[b.priority] ?? 9) : 0
   );
 
-  const pill = (active: boolean) => `whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active ? "bg-brand-green text-white" : "border border-stone-200 bg-white"}`;
+  const pill = (active: boolean) => `whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active ? "bg-brand-green text-white" : "border border-brand-line bg-white"}`;
   const qs = (o: Record<string, string | undefined>) => {
     const u = new URLSearchParams();
     Object.entries({ tab, p, who, due, ...o }).forEach(([k, v]) => v && u.set(k, v));
@@ -329,7 +329,7 @@ export default async function Enquiries({ searchParams }: {
       <div className="mb-4 flex gap-2 overflow-x-auto">
         <Link href={qs({ p: "" })} className={pill(!p)}>All priorities</Link>
         {PRIORITIES.map((x) => (
-          <Link key={x.value} href={qs({ p: x.value })} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold ${p === x.value ? x.chip : "border border-stone-200 bg-white text-stone-700"}`}>{x.label}</Link>
+          <Link key={x.value} href={qs({ p: x.value })} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-semibold ${p === x.value ? x.chip : "border border-brand-line bg-white text-stone-700"}`}>{x.label}</Link>
         ))}
       </div>
 
@@ -406,7 +406,7 @@ export default async function Enquiries({ searchParams }: {
               <div className="mt-3">
                 <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-500">History</div>
                 {history.length ? (
-                  <ul className="space-y-1 border-l-2 border-stone-200 pl-3">
+                  <ul className="space-y-1 border-l-2 border-brand-line pl-3">
                     {history.map((h) => (
                       <li key={h.id} className="text-sm">
                         <span className="text-xs text-stone-500">{formatDateTime(h.created_at)}{h.author?.full_name ? ` · ${h.author.full_name}` : ""}</span>
@@ -424,7 +424,7 @@ export default async function Enquiries({ searchParams }: {
                 </form>
               </div>
 
-              <details className="mt-4 border-t border-stone-100 pt-3">
+              <details className="mt-4 border-t border-brand-line pt-3">
                 <summary className="cursor-pointer text-sm font-semibold text-brand-green">Update priority, actions &amp; status</summary>
                 <form action={updateEnquiry} className="mt-3 grid gap-3 md:grid-cols-2">
                   <input type="hidden" name="id" value={e.id} /><input type="hidden" name="tab" value={tab} />

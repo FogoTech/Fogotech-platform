@@ -40,7 +40,7 @@ export default async function OfficeGallery() {
       <GalleryUploader userId={profile.id} />
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(photos ?? []).map((p) => (
-          <div key={p.id} className={`overflow-hidden rounded-xl border bg-white shadow-sm ${p.visible ? "border-stone-200" : "border-dashed border-stone-300 opacity-60"}`}>
+          <div key={p.id} className={`overflow-hidden rounded-xl border bg-white shadow-sm ${p.visible ? "border-brand-line" : "border-dashed border-stone-300 opacity-60"}`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={galleryUrl(p.storage_path)} alt={p.caption ?? ""} className="aspect-[4/3] w-full object-cover" />
             <form action={updatePhoto} className="space-y-2 p-3 text-sm">

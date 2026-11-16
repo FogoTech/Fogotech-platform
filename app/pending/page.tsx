@@ -9,7 +9,7 @@ export default async function Pending() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="card max-w-md text-center">
-        <Logo className="justify-center" />
+        <Logo stacked />
         <h1 className="mt-6 text-xl font-bold text-brand-green-dark">Account awaiting approval</h1>
         <p className="mt-3 text-sm text-stone-600">
           Thanks for signing up, {profile.full_name || profile.email}. The FogoTech office will link your login to your

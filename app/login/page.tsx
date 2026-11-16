@@ -17,9 +17,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const message = sp.message ? MESSAGES[sp.message] : undefined;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-brand-green-dark p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-7 shadow-xl">
-        <Link href="/" className="flex justify-center"><Logo /></Link>
+    <div className="flex min-h-screen items-center justify-center bg-brand-bg p-4">
+      <div className="w-full max-w-sm rounded-2xl border border-brand-line bg-white p-7 shadow-sm">
+        <Link href="/" className="flex justify-center"><Logo stacked /></Link>
         <h1 className="mt-6 text-center text-xl font-bold text-brand-green-dark">
           {mode === "signup" ? "Create your account" : mode === "forgot" ? "Reset your password" : "Client portal sign in"}
         </h1>

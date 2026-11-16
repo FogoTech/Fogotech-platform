@@ -50,7 +50,7 @@ export default async function OfficeDashboard({ searchParams }: { searchParams: 
       <div className="mb-3 mt-8 flex gap-2 overflow-x-auto">
         {TABS.map((t) => (
           <Link key={t.key} href={`/office?tab=${t.key}`}
-            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${t.key === current.key ? "bg-brand-green text-white" : "bg-white border border-stone-200 text-stone-700"}`}>
+            className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${t.key === current.key ? "bg-brand-green text-white" : "bg-white border border-brand-line text-stone-700"}`}>
             {t.label}
           </Link>
         ))}

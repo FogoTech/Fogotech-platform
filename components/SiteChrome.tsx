@@ -4,7 +4,7 @@ import { getSettings, whatsappLink } from "@/lib/site";
 
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-brand-line bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
         <Link href="/"><Logo /></Link>
         <nav className="flex items-center gap-1 text-sm">
@@ -14,7 +14,7 @@ export function SiteHeader() {
           <Link href="/login" className="btn-gold whitespace-nowrap">Client portal</Link>
         </nav>
       </div>
-      <nav className="flex justify-center gap-6 border-t border-stone-100 py-2 text-sm sm:hidden">
+      <nav className="flex justify-center gap-6 border-t border-brand-line py-2 text-sm sm:hidden">
         <Link href="/#services" className="text-stone-700">Services</Link>
         <Link href="/our-work" className="text-stone-700">Our work</Link>
         <Link href="/contact" className="text-stone-700">Contact</Link>

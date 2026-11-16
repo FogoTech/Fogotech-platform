@@ -59,11 +59,11 @@ export function JobTable({ jobs, hrefBase, showCustomer = false, showAssignee = 
 }) {
   if (!jobs.length) return <div className="card text-sm text-stone-500">No jobs to show.</div>;
   return (
-    <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-      <ul className="divide-y divide-stone-100">
+    <div className="overflow-hidden rounded-xl border border-brand-line bg-white shadow-sm">
+      <ul className="divide-y divide-brand-line">
         {jobs.map((j) => {
           const inner = (
-            <div className="flex flex-wrap items-start justify-between gap-2 px-4 py-3 hover:bg-stone-50">
+            <div className="flex flex-wrap items-start justify-between gap-2 px-4 py-3 hover:bg-brand-bg">
               <div className="min-w-0">
                 <div className="text-sm font-semibold">
                   <span className="text-stone-400">{j.job_number}</span> {j.title}

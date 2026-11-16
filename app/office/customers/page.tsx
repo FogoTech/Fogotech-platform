@@ -29,11 +29,11 @@ export default async function Customers({ searchParams }: { searchParams: Promis
       <PageHeader title="Customers" />
       {sp.error && <Notice tone="error">{sp.error}</Notice>}
       <form className="mb-4"><input className="input max-w-sm" name="q" defaultValue={sp.q} placeholder="Search customers…" /></form>
-      <div className="overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
-        <ul className="divide-y divide-stone-100">
+      <div className="overflow-hidden rounded-xl border border-brand-line bg-white shadow-sm">
+        <ul className="divide-y divide-brand-line">
           {(customers ?? []).map((c) => (
             <li key={c.id}>
-              <Link href={`/office/customers/${c.id}`} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm hover:bg-stone-50">
+              <Link href={`/office/customers/${c.id}`} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm hover:bg-brand-bg">
                 <span className="font-semibold">{c.name}</span>
                 <span className="text-stone-500">
                   {(c.sites as unknown as { count: number }[])[0]?.count ?? 0} sites · {(c.jobs as unknown as { count: number }[])[0]?.count ?? 0} jobs

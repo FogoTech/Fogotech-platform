@@ -1,16 +1,20 @@
-// Placeholder emblem until the real FogoTech logo file is added to /public.
-export function Logo({ light = false, className = "" }: { light?: boolean; className?: string }) {
-  return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <svg viewBox="0 0 64 40" className="h-8 w-auto" aria-hidden="true">
-        <ellipse cx="32" cy="20" rx="30" ry="18" fill="#1f5a3a" stroke="#c9a23a" strokeWidth="3" />
-        <text x="32" y="27" textAnchor="middle" fontSize="20" fontWeight="800" fill="#c9a23a" fontFamily="system-ui, sans-serif">
-          FT
-        </text>
-      </svg>
-      <span className={`text-lg font-extrabold tracking-wide ${light ? "text-white" : "text-brand-green"}`}>
-        FOGO<span className="text-brand-gold">TECH</span>
+/* eslint-disable @next/next/no-img-element */
+// FogoTech emblem + wordmark (from /public/brand)
+export function Logo({ className = "", size = "md", stacked = false }: { light?: boolean; className?: string; size?: "sm" | "md" | "lg"; stacked?: boolean }) {
+  if (stacked) {
+    return (
+      <span className={`flex flex-col items-center gap-4 ${className}`}>
+        <img src="/brand/emblem.png" alt="" className="h-24 w-auto" />
+        <img src="/brand/wordmark.png" alt="FogoTech" className="h-5 w-auto" />
       </span>
+    );
+  }
+  const em = size === "lg" ? "h-14" : size === "sm" ? "h-8" : "h-10";
+  const wm = size === "lg" ? "h-5" : size === "sm" ? "h-3" : "h-3.5";
+  return (
+    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+      <img src="/brand/emblem.png" alt="" className={`${em} w-auto`} />
+      <img src="/brand/wordmark.png" alt="FogoTech" className={`${wm} w-auto`} />
     </span>
   );
 }

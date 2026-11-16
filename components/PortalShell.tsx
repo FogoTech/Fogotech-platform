@@ -1,66 +1,53 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { NavLinks, type NavItem } from "@/components/NavLinks";
 import type { Profile } from "@/lib/auth";
-
-type NavItem = { href: string; label: string; soon?: boolean };
 
 const NAV: Record<Profile["role"], NavItem[]> = {
   customer: [
-    { href: "/customer", label: "Dashboard" },
-    { href: "/customer/new-job", label: "Log a job" },
-    { href: "/customer/sites", label: "Sites" },
-    { href: "/customer/logins", label: "Logins", soon: true },
-    { href: "/customer/documents", label: "Forms & certificates", soon: true },
+    { href: "/customer", label: "Dashboard", icon: "🏠" },
+    { href: "/customer/new-job", label: "Log a job", icon: "➕" },
+    { href: "/customer/sites", label: "Sites", icon: "📍" },
+    { href: "/customer/logins", label: "Logins", icon: "🔑", soon: true },
+    { href: "/customer/documents", label: "Forms & certificates", icon: "📄", soon: true },
   ],
   office: [
-    { href: "/office", label: "Dashboard" },
-    { href: "/office/jobs/new", label: "New job" },
-    { href: "/office/customers", label: "Customers" },
-    { href: "/office/enquiries", label: "Enquiries" },
-    { href: "/office/users", label: "Users & logins" },
-    { href: "/office/gallery", label: "Website gallery" },
-    { href: "/office/settings", label: "Website & email settings" },
+    { href: "/office", label: "Dashboard", icon: "🏠" },
+    { href: "/office/jobs/new", label: "New job", icon: "➕" },
+    { href: "/office/enquiries", label: "Enquiries", icon: "📩" },
+    { href: "/office/customers", label: "Customers", icon: "👥" },
+    { href: "/office/users", label: "Users & logins", icon: "🔑" },
+    { href: "/office/gallery", label: "Website gallery", icon: "🖼️" },
+    { href: "/office/settings", label: "Website & email settings", icon: "⚙️" },
   ],
-  engineer: [{ href: "/engineer", label: "My jobs" }],
+  engineer: [{ href: "/engineer", label: "My jobs", icon: "🛠️" }],
 };
 
 const ROLE_LABEL = { customer: "Client portal", office: "Office", engineer: "Engineer" };
 
 export function PortalShell({ profile, children }: { profile: Profile; children: React.ReactNode }) {
-  const nav = NAV[profile.role];
   return (
     <div className="min-h-screen md:flex">
-      <aside className="bg-brand-green-dark text-white md:fixed md:inset-y-0 md:w-60 md:flex md:flex-col">
-        <div className="flex items-center justify-between px-5 py-4">
-          <Link href="/dashboard">
-            <Logo light />
-          </Link>
-          <span className="rounded bg-brand-gold/20 px-2 py-0.5 text-xs text-brand-gold md:hidden">{ROLE_LABEL[profile.role]}</span>
+      <aside className="border-b border-brand-line bg-white md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col md:border-b-0 md:border-r">
+        <div className="flex items-center justify-between px-4 py-3 md:px-5 md:py-5">
+          <Link href="/dashboard"><Logo size="sm" /></Link>
+          <span className="rounded-full bg-brand-gold-light px-2.5 py-0.5 text-xs font-semibold text-brand-gold-dark md:hidden">{ROLE_LABEL[profile.role]}</span>
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:overflow-visible">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="whitespace-nowrap rounded-lg px-3 py-2 text-sm text-white/85 hover:bg-white/10 hover:text-white"
-            >
-              {item.label}
-              {item.soon && <span className="ml-2 text-[10px] uppercase text-brand-gold">soon</span>}
-            </Link>
-          ))}
+          <NavLinks items={NAV[profile.role]} />
         </nav>
-        <div className="hidden border-t border-white/10 px-5 py-4 text-sm md:block">
-          <div className="text-xs uppercase tracking-wide text-brand-gold">{ROLE_LABEL[profile.role]}</div>
+        <div className="hidden border-t border-brand-line px-5 py-4 text-sm md:block">
+          <div className="text-xs font-semibold uppercase tracking-wide text-brand-gold-dark">{ROLE_LABEL[profile.role]}</div>
           <div className="truncate">{profile.full_name || profile.email}</div>
           <form action="/auth/signout" method="post">
-            <button className="mt-2 text-white/70 hover:text-white">Sign out</button>
+            <button className="mt-2 text-brand-mute hover:text-brand-green-dark">Sign out</button>
           </form>
         </div>
       </aside>
-      <main className="flex-1 px-4 py-6 md:ml-60 md:px-10 md:py-8">
+      <main className="flex-1 px-4 py-6 md:ml-64 md:px-10 md:py-8">
         <div className="mx-auto max-w-5xl">{children}</div>
         <form action="/auth/signout" method="post" className="mt-10 md:hidden">
-          <button className="text-sm text-stone-500 underline">Sign out</button>
+          <button className="text-sm text-brand-mute underline">Sign out</button>
         </form>
       </main>
     </div>

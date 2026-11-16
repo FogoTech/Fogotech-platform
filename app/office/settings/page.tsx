@@ -35,7 +35,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         <div><label className="label">Areas covered</label><input className="input" name="areas_covered" defaultValue={s?.areas_covered ?? ""} /></div>
         <div className="md:col-span-2"><label className="label">Opening hours</label><textarea className="input min-h-20" name="opening_hours" defaultValue={s?.opening_hours ?? ""} placeholder={"Mon–Thu 8am–6pm\nFri 8am–1pm"} /></div>
         <div className="md:col-span-2"><label className="label">Address (optional)</label><textarea className="input min-h-20" name="address" defaultValue={s?.address ?? ""} /></div>
-        <div className="border-t border-stone-200 pt-4 md:col-span-2">
+        <div className="border-t border-brand-line pt-4 md:col-span-2">
           <h2 className="font-semibold">Reply to website enquiries</h2>
           <label className="mt-2 flex items-center gap-2 text-sm">
             <input type="checkbox" name="autoreply_enabled" defaultChecked={s?.autoreply_enabled ?? false} />

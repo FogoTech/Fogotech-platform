@@ -14,7 +14,7 @@ export default async function OurWork({ searchParams }: { searchParams: Promise<
   const { data: photos } = await q;
 
   const pill = (active: boolean) =>
-    `whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active ? "bg-brand-green text-white" : "border border-stone-200 bg-white text-stone-700"}`;
+    `whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active ? "bg-brand-green text-white" : "border border-brand-line bg-white text-stone-700"}`;
 
   return (
     <div className="bg-white">
@@ -35,7 +35,7 @@ export default async function OurWork({ searchParams }: { searchParams: Promise<
         {photos && photos.length ? (
           <div className="columns-1 gap-4 sm:columns-2 lg:columns-3">
             {photos.map((p) => (
-              <figure key={p.id} className="mb-4 break-inside-avoid overflow-hidden rounded-xl border border-stone-200 bg-white shadow-sm">
+              <figure key={p.id} className="mb-4 break-inside-avoid overflow-hidden rounded-xl border border-brand-line bg-white shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={galleryUrl(p.storage_path)} alt={p.caption ?? "FogoTech installation"} loading="lazy" className="w-full" />
                 {p.caption && <figcaption className="px-4 py-3 text-sm text-stone-700">{p.caption}</figcaption>}
