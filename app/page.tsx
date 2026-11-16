@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Logo } from "@/components/Logo";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { createClient } from "@/lib/supabase/server";
+import { galleryUrl } from "@/lib/site";
 
 const SERVICES = [
   {
@@ -24,20 +26,14 @@ const SERVICES = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: photos } = await supabase.from("gallery_photos").select("id, storage_path, caption")
+    .eq("visible", true).eq("featured", true).order("sort_order").order("created_at", { ascending: false }).limit(6);
+
   return (
     <div className="bg-white">
-      {/* Header */}
-      <header className="sticky top-0 z-10 border-b border-stone-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Logo />
-          <nav className="flex items-center gap-2 text-sm">
-            <a href="#services" className="hidden px-3 py-2 text-stone-700 hover:text-brand-green sm:inline">Services</a>
-            <a href="#contact" className="hidden px-3 py-2 text-stone-700 hover:text-brand-green sm:inline">Contact</a>
-            <Link href="/login" className="btn-gold">Client portal</Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Hero */}
       <section className="bg-brand-green-dark text-white">
@@ -51,7 +47,7 @@ export default function Home() {
             log jobs and follow their progress at any time.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <a href="#contact" className="btn-gold">Get a quote</a>
+            <Link href="/contact" className="btn-gold">Get a quote</Link>
             <Link href="/login" className="btn border border-white/30 text-white hover:bg-white/10">Log a job</Link>
           </div>
         </div>
@@ -92,24 +88,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Contact */}
-      <section id="contact" className="mx-auto max-w-6xl px-4 py-16 md:py-20">
-        <h2 className="text-3xl font-bold text-brand-green-dark">Get in touch</h2>
-        <p className="mt-3 max-w-2xl text-stone-600">
-          Tell us about your site and what you need, and we&apos;ll come back to you with advice and a quote.
-        </p>
-        <div className="mt-6 card max-w-xl text-sm text-stone-600">
-          {/* TODO: replace with real phone / email / contact form */}
-          Contact details coming soon.
+      {/* Recent work */}
+      {photos && photos.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-16">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <h2 className="text-3xl font-bold text-brand-green-dark">Recent work</h2>
+            <Link href="/our-work" className="text-sm font-semibold text-brand-green underline">See all our work</Link>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {photos.map((p) => (
+              <figure key={p.id} className="overflow-hidden rounded-xl border border-stone-200 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={galleryUrl(p.storage_path)} alt={p.caption ?? "FogoTech installation"} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                {p.caption && <figcaption className="px-4 py-3 text-sm text-stone-700">{p.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Contact CTA */}
+      <section id="contact" className="bg-brand-gold-light">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-6 px-4 py-14">
+          <div>
+            <h2 className="text-3xl font-bold text-brand-green-dark">Planning a new system or need a repair?</h2>
+            <p className="mt-2 text-stone-700">Tell us what you need and we&apos;ll come back to you with advice and a quote.</p>
+          </div>
+          <Link href="/contact" className="btn-primary">Contact us</Link>
         </div>
       </section>
 
-      <footer className="bg-brand-green-dark py-8 text-sm text-white/70">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4">
-          <Logo light />
-          <span>© {new Date().getFullYear()} FogoTech. Manchester, UK.</span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

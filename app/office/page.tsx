@@ -14,6 +14,7 @@ const TABS = [
 export default async function OfficeDashboard({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab = "awaiting" } = await searchParams;
   const { supabase } = await requireProfile(["office"]);
+  const { count: newEnquiries } = await supabase.from("enquiries").select("id", { count: "exact", head: true }).eq("status", "new");
   const { data } = await supabase.from("jobs").select(JOB_SELECT).order("created_at", { ascending: false }).limit(500);
   const jobs = (data ?? []) as unknown as JobRow[];
   const count = (statuses: string[]) => jobs.filter((j) => statuses.includes(j.status)).length;
@@ -25,6 +26,11 @@ export default async function OfficeDashboard({ searchParams }: { searchParams: 
   return (
     <>
       <PageHeader title="Office dashboard" action={<Link href="/office/jobs/new" className="btn-gold">+ New job</Link>} />
+      {!!newEnquiries && (
+        <Link href="/office/enquiries" className="mb-4 block rounded-lg border border-brand-gold/50 bg-brand-gold-light px-4 py-3 text-sm font-medium text-brand-green-dark">
+          📩 {newEnquiries} new website {newEnquiries === 1 ? "enquiry" : "enquiries"} — view
+        </Link>
+      )}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="Awaiting scheduling" value={count(TABS[0].statuses)} href="/office?tab=awaiting" />
         <StatCard label="Scheduled" value={count(TABS[1].statuses)} href="/office?tab=scheduled" />
