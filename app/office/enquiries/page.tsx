@@ -44,7 +44,32 @@ type Enquiry = {
   message: string; status: string; office_notes: string | null; customer_id: string | null; created_at: string;
   source: string; priority: string; actions: string[]; action_other: string | null;
   actions_done: Record<string, { at: string; by: string }>;
+  follow_up_on: string | null; closed_reason: string | null; assigned_to: string | null; job_id: string | null;
 };
+
+type Activity = { id: string; enquiry_id: string; body: string; created_at: string; author: { full_name: string | null } | null };
+
+const CLOSED_REASONS = [
+  { value: "too_expensive", label: "Too expensive" },
+  { value: "went_elsewhere", label: "Went elsewhere" },
+  { value: "no_response", label: "No response" },
+  { value: "not_a_fit", label: "Not a job we do" },
+  { value: "not_needed", label: "No longer needed" },
+  { value: "other", label: "Other" },
+];
+
+function todayLondon() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date());
+}
+
+function followUpBadge(date: string | null, open: boolean) {
+  if (!date || !open) return null;
+  const today = todayLondon();
+  const label = new Date(date + "T12:00:00Z").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  if (date < today) return { text: `Overdue · ${label}`, cls: "bg-red-100 text-red-800" };
+  if (date === today) return { text: "Follow up today", cls: "bg-amber-100 text-amber-900" };
+  return { text: `Follow up ${label}`, cls: "bg-stone-100 text-stone-700" };
+}
 
 function readFollowUp(formData: FormData) {
   const actions = formData.getAll("actions").map(String).filter((a) => ACTIONS.some((x) => x.value === a));
@@ -54,21 +79,27 @@ function readFollowUp(formData: FormData) {
     priority: String(formData.get("priority") ?? "standard"),
     actions,
     action_other: other || null,
-    office_notes: String(formData.get("office_notes") ?? "").trim() || null,
+    assigned_to: String(formData.get("assigned_to") ?? "") || null,
+    follow_up_on: String(formData.get("follow_up_on") ?? "") || null,
   };
+}
+
+async function addActivity(supabase: Awaited<ReturnType<typeof requireProfile>>["supabase"], enquiryId: string, authorId: string, body: string) {
+  if (body.trim()) await supabase.from("enquiry_activities").insert({ enquiry_id: enquiryId, author_id: authorId, body: body.trim().slice(0, 2000) });
 }
 
 async function addEnquiry(formData: FormData) {
   "use server";
   const { supabase, profile } = await requireProfile(["office"]);
   const get = (k: string) => String(formData.get(k) ?? "").trim() || null;
-  const { error } = await supabase.from("enquiries").insert({
+  const { data, error } = await supabase.from("enquiries").insert({
     name: get("name"), phone: get("phone"), email: get("email"),
     service: get("service"), postcode: get("postcode")?.toUpperCase() ?? null,
     message: get("message") ?? "(no details)", source: get("source") ?? "phone",
     created_by: profile.id,
     ...readFollowUp(formData),
-  });
+  }).select("id").single();
+  if (!error && data) await addActivity(supabase, data.id, profile.id, String(formData.get("note") ?? ""));
   if (error) {
     const msg = error.message.includes("enquiry_has_contact") ? "Add a phone number or email." : error.message;
     redirect(`/office/enquiries?add=1&error=${encodeURIComponent(msg)}`);
@@ -79,8 +110,14 @@ async function addEnquiry(formData: FormData) {
 async function updateEnquiry(formData: FormData) {
   "use server";
   const { supabase } = await requireProfile(["office"]);
+  const status = String(formData.get("status"));
+  const closed_reason = String(formData.get("closed_reason") ?? "") || null;
+  if (status === "closed" && !closed_reason) {
+    redirect(`/office/enquiries?tab=${formData.get("tab") ?? "open"}&error=${encodeURIComponent("Choose a reason when closing an enquiry.")}#e-${formData.get("id")}`);
+  }
   const { error } = await supabase.from("enquiries").update({
-    status: String(formData.get("status")),
+    status,
+    closed_reason: status === "closed" ? closed_reason : null,
     ...readFollowUp(formData),
   }).eq("id", String(formData.get("id")));
   if (error) redirect(`/office/enquiries?error=${encodeURIComponent(error.message)}`);
@@ -100,6 +137,64 @@ async function toggleAction(formData: FormData) {
   redirect(`/office/enquiries?tab=${formData.get("tab") ?? "open"}#e-${id}`);
 }
 
+async function logActivity(formData: FormData) {
+  "use server";
+  const { supabase, profile } = await requireProfile(["office"]);
+  const id = String(formData.get("id"));
+  await addActivity(supabase, id, profile.id, String(formData.get("body") ?? ""));
+  const next = String(formData.get("follow_up_on") ?? "");
+  const update: Record<string, unknown> = {};
+  if (next) update.follow_up_on = next;
+  if (formData.get("mark_contacted")) update.status = "contacted";
+  if (Object.keys(update).length) await supabase.from("enquiries").update(update).eq("id", id);
+  redirect(`/office/enquiries?tab=${formData.get("tab") ?? "open"}#e-${id}`);
+}
+
+async function bookSiteVisit(formData: FormData) {
+  "use server";
+  const { supabase, profile } = await requireProfile(["office"]);
+  const id = String(formData.get("id"));
+  const { data: e } = await supabase.from("enquiries").select("*").eq("id", id).single();
+  if (!e) redirect("/office/enquiries");
+  if (e.job_id) redirect(`/office/jobs/${e.job_id}`);
+
+  // Make sure there's a customer (and a site if we know the postcode)
+  let customerId: string | null = e.customer_id;
+  if (!customerId) {
+    const { data: c, error } = await supabase.from("customers").insert({
+      name: e.name, email: e.email, phone: e.phone, billing_postcode: e.postcode,
+      notes: `From enquiry (${e.service ?? "general"}): ${e.message}`,
+    }).select("id").single();
+    if (error) redirect(`/office/enquiries?error=${encodeURIComponent(error.message)}`);
+    customerId = c!.id;
+  }
+  let siteId: string | null = null;
+  if (e.postcode) {
+    const { data: existing } = await supabase.from("sites").select("id").eq("customer_id", customerId).eq("postcode", e.postcode).maybeSingle();
+    siteId = existing?.id ?? null;
+    if (!siteId) {
+      const { data: site } = await supabase.from("sites").insert({ customer_id: customerId, name: "Main site", postcode: e.postcode }).select("id").single();
+      siteId = site?.id ?? null;
+    }
+  }
+  const { data: job, error: jobErr } = await supabase.from("jobs").insert({
+    customer_id: customerId, site_id: siteId, job_type: "site_survey", status: "awaiting_schedule",
+    title: `Site survey${e.service ? ` – ${e.service}` : ""}`, description: e.message, created_by: profile.id,
+    assigned_to: null,
+  }).select("id, job_number").single();
+  if (jobErr) redirect(`/office/enquiries?error=${encodeURIComponent(jobErr.message)}`);
+
+  const done = { ...((e.actions_done as Record<string, unknown>) ?? {}) };
+  done.site_visit = { at: new Date().toISOString(), by: profile.full_name || profile.email || "Office" };
+  const actions = Array.from(new Set([...(e.actions ?? []), "site_visit"]));
+  await supabase.from("enquiries").update({
+    customer_id: customerId, job_id: job!.id, actions, actions_done: done,
+    status: e.status === "new" ? "contacted" : e.status,
+  }).eq("id", id);
+  await addActivity(supabase, id, profile.id, `Site survey job ${job!.job_number} created`);
+  redirect(`/office/jobs/${job!.id}?fromEnquiry=1`);
+}
+
 async function convertToCustomer(formData: FormData) {
   "use server";
   const { supabase } = await requireProfile(["office"]);
@@ -116,7 +211,7 @@ async function convertToCustomer(formData: FormData) {
 }
 
 /** Priority chips, action tick boxes, "other" box and notes – shared by the add and edit forms. */
-function FollowUpFields({ e, idPrefix }: { e?: Enquiry; idPrefix: string }) {
+function FollowUpFields({ e, idPrefix, staff }: { e?: Enquiry; idPrefix: string; staff: { id: string; full_name: string | null; email: string | null }[] }) {
   const current = e?.priority ?? "standard";
   return (
     <>
@@ -143,23 +238,41 @@ function FollowUpFields({ e, idPrefix }: { e?: Enquiry; idPrefix: string }) {
         </div>
         <input className="input mt-2" name="action_other" defaultValue={e?.action_other ?? ""} placeholder="Other action (optional)" maxLength={300} />
       </div>
-      <div className="md:col-span-2">
-        <label className="label">Follow-up notes</label>
-        <input className="input" name="office_notes" defaultValue={e?.office_notes ?? ""} placeholder="e.g. Call back Tuesday after 2pm" />
+      <div>
+        <label className="label">Assigned to</label>
+        <select className="input" name="assigned_to" defaultValue={e?.assigned_to ?? ""}>
+          <option value="">Anyone (everyone is notified)</option>
+          {staff.map((p) => <option key={p.id} value={p.id}>{p.full_name || p.email}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className="label">Next follow-up</label>
+        <input className="input" type="date" name="follow_up_on" defaultValue={e?.follow_up_on ?? ""} />
       </div>
     </>
   );
 }
 
 export default async function Enquiries({ searchParams }: {
-  searchParams: Promise<{ tab?: string; error?: string; add?: string; added?: string; saved?: string; p?: string }>;
+  searchParams: Promise<{ tab?: string; error?: string; add?: string; added?: string; saved?: string; p?: string; who?: string; due?: string }>;
 }) {
-  const { tab = "open", error, add, added, saved, p } = await searchParams;
-  const { supabase } = await requireProfile(["office"]);
+  const { tab = "open", error, add, added, saved, p, who, due } = await searchParams;
+  const { supabase, profile } = await requireProfile(["office"]);
+  const { data: staffData } = await supabase.from("profiles").select("id, full_name, email").eq("role", "office").eq("active", true).order("full_name");
+  const staff = staffData ?? [];
+  const staffName = (id: string | null) => { const p = staff.find((x) => x.id === id); return p ? (p.full_name || p.email) : null; };
   let q = supabase.from("enquiries").select("*").order("created_at", { ascending: false }).limit(300);
   q = tab === "open" ? q.in("status", ["new", "contacted"]) : q.in("status", ["converted", "closed"]);
   if (p) q = q.eq("priority", p);
+  if (who === "me") q = q.eq("assigned_to", profile.id);
+  if (who === "none") q = q.is("assigned_to", null);
+  if (due) q = q.lte("follow_up_on", todayLondon());
   const { data } = await q;
+  const ids = (data ?? []).map((e) => e.id);
+  const { data: actData } = ids.length
+    ? await supabase.from("enquiry_activities").select("id, enquiry_id, body, created_at, author:profiles(full_name)").in("enquiry_id", ids).order("created_at", { ascending: false })
+    : { data: [] };
+  const activities = (actData ?? []) as unknown as Activity[];
   const enquiries = ((data ?? []) as Enquiry[]).sort((a, b) =>
     tab === "open" ? (PRIORITY_RANK[a.priority] ?? 9) - (PRIORITY_RANK[b.priority] ?? 9) : 0
   );
@@ -167,7 +280,7 @@ export default async function Enquiries({ searchParams }: {
   const pill = (active: boolean) => `whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${active ? "bg-brand-green text-white" : "border border-stone-200 bg-white"}`;
   const qs = (o: Record<string, string | undefined>) => {
     const u = new URLSearchParams();
-    Object.entries({ tab, p, ...o }).forEach(([k, v]) => v && u.set(k, v));
+    Object.entries({ tab, p, who, due, ...o }).forEach(([k, v]) => v && u.set(k, v));
     return `/office/enquiries?${u}`;
   };
 
@@ -194,7 +307,8 @@ export default async function Enquiries({ searchParams }: {
           </div>
           <div><label className="label">Postcode</label><input className="input" name="postcode" /></div>
           <div className="md:col-span-2"><label className="label">Details</label><textarea className="input min-h-24" name="message" placeholder="What they asked for" /></div>
-          <FollowUpFields idPrefix="new" />
+          <FollowUpFields idPrefix="new" staff={staff} />
+          <div className="md:col-span-2"><label className="label">First note (optional)</label><input className="input" name="note" placeholder="e.g. Spoke to them, wants cameras on the front and back" /></div>
           <div className="flex gap-2 md:col-span-2">
             <SubmitButton>Save enquiry</SubmitButton>
             <Link href="/office/enquiries" className="btn-outline">Cancel</Link>
@@ -205,6 +319,12 @@ export default async function Enquiries({ searchParams }: {
       <div className="mb-3 flex gap-2 overflow-x-auto">
         <Link href={qs({ tab: "open" })} className={pill(tab === "open")}>Open</Link>
         <Link href={qs({ tab: "done" })} className={pill(tab === "done")}>Done</Link>
+      </div>
+      <div className="mb-3 flex gap-2 overflow-x-auto">
+        <Link href={qs({ who: "" })} className={pill(!who)}>Everyone&apos;s</Link>
+        <Link href={qs({ who: "me" })} className={pill(who === "me")}>Mine</Link>
+        <Link href={qs({ who: "none" })} className={pill(who === "none")}>Unassigned</Link>
+        <Link href={qs({ due: due ? "" : "1" })} className={`whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${due ? "bg-red-600 text-white" : "border border-red-200 bg-white text-red-700"}`}>Due / overdue</Link>
       </div>
       <div className="mb-4 flex gap-2 overflow-x-auto">
         <Link href={qs({ p: "" })} className={pill(!p)}>All priorities</Link>
@@ -223,6 +343,9 @@ export default async function Enquiries({ searchParams }: {
             ...(e.action_other ? [{ key: "other", label: e.action_other }] : []),
           ];
           const doneCount = actionItems.filter((a) => e.actions_done?.[a.key]).length;
+          const fu = followUpBadge(e.follow_up_on, ["new", "contacted"].includes(e.status));
+          const history = activities.filter((a) => a.enquiry_id === e.id);
+          const reason = CLOSED_REASONS.find((r) => r.value === e.closed_reason)?.label;
           return (
             <div key={e.id} id={`e-${e.id}`} className={`card border-l-8 text-sm ${pr.border}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -237,6 +360,12 @@ export default async function Enquiries({ searchParams }: {
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${pr.chip}`}>{pr.label}</span>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${st.cls}`}>{st.label}</span>
                 </div>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                <span className="rounded-full bg-stone-100 px-2.5 py-0.5 text-stone-700">👤 {staffName(e.assigned_to) ?? "Unassigned"}</span>
+                {fu && <span className={`rounded-full px-2.5 py-0.5 font-medium ${fu.cls}`}>📅 {fu.text}</span>}
+                {reason && <span className="rounded-full bg-stone-200 px-2.5 py-0.5 text-stone-700">Closed: {reason}</span>}
+                {e.job_id && <Link href={`/office/jobs/${e.job_id}`} className="rounded-full bg-brand-green-light px-2.5 py-0.5 font-medium text-brand-green-dark underline">Site survey job</Link>}
               </div>
               <div className="mt-2 flex flex-wrap gap-3">
                 {e.phone && <a className="font-semibold text-brand-green underline" href={`tel:${e.phone.replace(/\s/g, "")}`}>{e.phone}</a>}
@@ -262,32 +391,74 @@ export default async function Enquiries({ searchParams }: {
                             <span className={d ? "text-stone-400 line-through" : "font-medium text-stone-800"}>{a.label}</span>
                             {d && <span className="text-xs text-stone-500">· {formatDateTime(d.at)} · {d.by}</span>}
                           </form>
+                          {a.key === "site_visit" && !d && !e.job_id && (
+                            <form action={bookSiteVisit} className="ml-7 mt-1">
+                              <input type="hidden" name="id" value={e.id} />
+                              <SubmitButton className="btn-gold px-3 py-1 text-xs">Book site visit →</SubmitButton>
+                            </form>
+                          )}
                         </li>
                       );
                     })}
                   </ul>
                 </div>
               )}
-              {e.office_notes && <p className="mt-2 text-xs text-stone-600">📝 {e.office_notes}</p>}
+              <div className="mt-3">
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-stone-500">History</div>
+                {history.length ? (
+                  <ul className="space-y-1 border-l-2 border-stone-200 pl-3">
+                    {history.map((h) => (
+                      <li key={h.id} className="text-sm">
+                        <span className="text-xs text-stone-500">{formatDateTime(h.created_at)}{h.author?.full_name ? ` · ${h.author.full_name}` : ""}</span>
+                        <div className="whitespace-pre-wrap text-stone-800">{h.body}</div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <div className="text-xs text-stone-400">Nothing logged yet.</div>}
+                <form action={logActivity} className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+                  <input type="hidden" name="id" value={e.id} /><input type="hidden" name="tab" value={tab} />
+                  <input className="input" name="body" required placeholder="Log a call, email or update…" />
+                  <div><label className="text-xs text-stone-500">Next follow-up</label><input className="input" type="date" name="follow_up_on" /></div>
+                  <SubmitButton className="btn-outline">Add</SubmitButton>
+                  {e.status === "new" && <label className="flex items-center gap-2 text-xs text-stone-600 sm:col-span-3"><input type="checkbox" name="mark_contacted" defaultChecked /> Mark as contacted</label>}
+                </form>
+              </div>
 
               <details className="mt-4 border-t border-stone-100 pt-3">
                 <summary className="cursor-pointer text-sm font-semibold text-brand-green">Update priority, actions &amp; status</summary>
                 <form action={updateEnquiry} className="mt-3 grid gap-3 md:grid-cols-2">
                   <input type="hidden" name="id" value={e.id} /><input type="hidden" name="tab" value={tab} />
-                  <FollowUpFields e={e} idPrefix={e.id} />
+                  <FollowUpFields e={e} idPrefix={e.id} staff={staff} />
                   <div>
                     <label className="label">Status</label>
                     <select className="input" name="status" defaultValue={e.status}>{STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}</select>
                   </div>
-                  <div className="flex items-end"><SubmitButton className="btn-primary w-full">Save</SubmitButton></div>
+                  <div>
+                    <label className="label">Reason (if closing)</label>
+                    <select className="input" name="closed_reason" defaultValue={e.closed_reason ?? ""}>
+                      <option value="">—</option>
+                      {CLOSED_REASONS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                    </select>
+                  </div>
+                  <div className="md:col-span-2"><SubmitButton className="btn-primary w-full">Save</SubmitButton></div>
                 </form>
               </details>
 
-              {!e.customer_id && e.status !== "closed" && (
-                <form action={convertToCustomer} className="mt-3">
-                  <input type="hidden" name="id" value={e.id} />
-                  <SubmitButton className="btn-gold">Make them a customer</SubmitButton>
-                </form>
+              {e.status !== "closed" && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {!e.job_id && (
+                    <form action={bookSiteVisit}>
+                      <input type="hidden" name="id" value={e.id} />
+                      <SubmitButton className="btn-outline">Book site visit</SubmitButton>
+                    </form>
+                  )}
+                  {!e.customer_id && (
+                    <form action={convertToCustomer}>
+                      <input type="hidden" name="id" value={e.id} />
+                      <SubmitButton className="btn-gold">Make them a customer</SubmitButton>
+                    </form>
+                  )}
+                </div>
               )}
               {e.customer_id && <Link href={`/office/customers/${e.customer_id}`} className="mt-3 inline-block text-brand-green underline">View customer</Link>}
             </div>

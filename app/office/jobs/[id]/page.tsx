@@ -112,6 +112,7 @@ export default async function OfficeJob({ params, searchParams }: {
     <>
       <PageHeader title={`${job.job_number} · ${job.title}`} action={<StatusBadge status={job.status} />} />
       {sp.saved && <Notice tone="success">Saved.</Notice>}
+      {sp.fromEnquiry && <Notice>Site survey job created from the enquiry. Choose an engineer and a visit time below, then save.</Notice>}
       {sp.error && <Notice tone="error">{sp.error}</Notice>}
 
       <div className="mb-4 grid gap-4 md:grid-cols-2">
