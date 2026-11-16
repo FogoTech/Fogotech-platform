@@ -62,10 +62,16 @@ Deno.serve(async (req) => {
       if (!claimed?.length) return Response.json({ skipped: "already sent" });
 
       const to = await officeEmails(e.assigned_to);
+      try {
       await send(to, `New website enquiry: ${e.name}${e.service ? ` (${e.service})` : ""}`,
         wrap(`<h2 style="margin-top:0">New website enquiry</h2>${enquiryTable(e)}
           <p><a href="${link}" style="background:#1f5a3a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open in the portal</a></p>`),
         e.email ?? undefined);
+      } catch (err) {
+        // Release the claim so the alert can be retried
+        await db.from("enquiries").update({ notified_at: null }).eq("id", e.id);
+        throw err;
+      }
 
       const { data: settings } = await db.from("company_settings").select("*").single();
       if (settings?.autoreply_enabled && e.email) {
