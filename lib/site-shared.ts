@@ -1,14 +1,15 @@
 export const GALLERY_CATEGORIES = [
   { value: "cctv", label: "CCTV" },
   { value: "alarms", label: "Intruder alarms" },
-  { value: "access_control", label: "Access control & intercoms" },
-  { value: "networks", label: "WiFi & networks" },
-  { value: "audio", label: "PA & sound" },
-  { value: "av", label: "TV, AV & signage" },
+  { value: "access_control", label: "Access control" },
+  { value: "networks", label: "Network infrastructure" },
+  { value: "wireless", label: "Wireless AP" },
+  { value: "audio", label: "Audio" },
+  { value: "av", label: "Visual" },
   { value: "other", label: "Other" },
 ] as const;
 
-export const ENQUIRY_SERVICES = ["CCTV", "Intruder alarm", "Access control / intercom", "WiFi / networking", "PA & sound system", "TV, AV or digital signage", "Service or repair", "Something else"];
+export const ENQUIRY_SERVICES = ["CCTV", "Intruder alarms", "Access control / door entry", "Network infrastructure", "Wireless AP / WiFi", "Audio", "Visual / screens", "Service or repair", "Something else"];
 
 export function galleryUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/gallery/${path}`;

@@ -2,38 +2,23 @@ import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { createClient } from "@/lib/supabase/server";
 import { galleryUrl } from "@/lib/site";
+import { Wave, circuitBg } from "@/components/Brand";
 
 const SERVICES = [
-  {
-    title: "CCTV",
-    text: "HD and IP camera systems with remote viewing on your phone, designed around your site and installed neatly.",
-    icon: "/icons/cctv.png",
-  },
-  {
-    title: "Intruder alarms",
-    text: "Wired and wireless alarm systems to protect homes and businesses, with app control and alerts.",
-    icon: "/icons/alarms.png",
-  },
-  {
-    title: "Access control & intercoms",
-    text: "Fobs, cards, keypads and video door entry, so you control who comes in, and when, from anywhere.",
-    icon: "/icons/access-control.png",
-  },
-  {
-    title: "WiFi & networks",
-    text: "Reliable WiFi coverage, structured cabling and network infrastructure that the rest of your systems can depend on.",
-    icon: "/icons/wifi.png",
-  },
-  {
-    title: "PA & sound systems",
-    text: "Clear background music and public address for shops, offices, halls and venues.",
-    icon: "/icons/audio.png",
-  },
-  {
-    title: "TV, AV & digital signage",
-    text: "TV and screen installation, meeting-room AV and digital signage to get your message seen.",
-    icon: "/icons/tv-av.png",
-  },
+  { title: "CCTV", icon: "/icons/cctv.png",
+    text: "HD and IP camera systems with remote viewing on your phone, designed around your site and installed neatly." },
+  { title: "Intruder Alarms", icon: "/icons/alarms.png",
+    text: "Wired and wireless alarm systems for homes and businesses, with app control and alerts." },
+  { title: "Access Control", icon: "/icons/access-control.png",
+    text: "Fobs, cards, keypads and door entry, so you control who comes in, and when, from anywhere." },
+  { title: "Network Infrastructure", icon: "/icons/networking.png",
+    text: "Structured cabling, cabinets and switching: the reliable backbone every other system depends on." },
+  { title: "Wireless AP", icon: "/icons/wifi.png",
+    text: "Professional wireless access points for strong, seamless WiFi coverage across the whole building." },
+  { title: "Audio", icon: "/icons/audio.png",
+    text: "Background music and public address for shops, offices, halls and venues." },
+  { title: "Visual", icon: "/icons/tv-av.png",
+    text: "Screens, TV installation, meeting-room AV and digital signage." },
 ];
 
 export default async function Home() {
@@ -46,35 +31,42 @@ export default async function Home() {
       <SiteHeader />
 
       {/* Hero */}
-      <section className="bg-brand-green-dark text-white">
-        <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
-          <p className="text-sm font-semibold uppercase tracking-widest text-brand-gold">Security &amp; network systems</p>
-          <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-tight md:text-5xl">
-            Security and connectivity, designed, installed and looked after properly.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-white/80">
-            CCTV, alarms, access control, intercoms, WiFi, sound and AV for homes and businesses, with a client portal so you can
-            log jobs and follow their progress at any time.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/contact" className="btn-gold">Get a quote</Link>
-            <Link href="/login" className="btn border border-white/30 text-white hover:bg-white/10">Log a job</Link>
+      <section className="relative bg-[#297542] text-white">
+        <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 pb-10 pt-14 md:grid-cols-[1fr_auto] md:pb-14 md:pt-20">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-[#e6be31]">Security &amp; network systems</p>
+            <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-tight md:text-5xl">
+              Security and connectivity, designed, installed and looked after properly.
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg text-white/85">
+              CCTV, intruder alarms, access control, networks, WiFi, audio and visual systems for homes and businesses, with a
+              client portal so you can log jobs and follow their progress at any time.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/contact" className="btn bg-[#e6be31] text-brand-green-dark hover:brightness-95">Get a quote</Link>
+              <Link href="/login" className="btn border border-white/40 text-white hover:bg-white/10">Log a job</Link>
+            </div>
           </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/emblem.png" alt="" className="hidden h-40 w-auto rounded-full bg-[#faf9f4]/95 p-3 shadow-lg md:block lg:h-48" />
         </div>
+        <Wave />
       </section>
 
       {/* Services */}
-      <section id="services" className="mx-auto max-w-6xl px-4 py-16 md:py-20">
-        <h2 className="text-3xl font-bold text-brand-green-dark">What we do</h2>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map((s) => (
-            <div key={s.title} className="card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={s.icon} alt="" className="h-16 w-16" />
-              <h3 className="mt-3 text-lg font-semibold text-brand-green">{s.title}</h3>
-              <p className="mt-2 text-sm text-stone-600">{s.text}</p>
-            </div>
-          ))}
+      <section id="services" style={circuitBg}>
+        <div className="mx-auto max-w-6xl px-4 py-14 md:py-20">
+          <h2 className="text-center text-3xl font-bold text-brand-green-dark">What we do</h2>
+          <div className="mt-10 flex flex-wrap justify-center gap-5">
+            {SERVICES.map((s) => (
+              <div key={s.title} className="card w-full text-center sm:w-[calc(50%-0.625rem)] lg:w-[calc(25%-0.94rem)]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={s.icon} alt="" className="mx-auto h-20 w-20" />
+                <h3 className="mt-3 text-sm font-bold uppercase tracking-widest text-brand-gold-dark">{s.title}</h3>
+                <p className="mt-2 text-sm text-brand-mute">{s.text}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
