@@ -22,7 +22,7 @@ export default async function OurWork({ searchParams }: { searchParams: Promise<
       <section className="bg-brand-green-dark text-white">
         <div className="mx-auto max-w-6xl px-4 py-14">
           <h1 className="text-4xl font-extrabold">Our work</h1>
-          <p className="mt-3 max-w-2xl text-white/80">A selection of recent installations across CCTV, door entry, access control and networking.</p>
+          <p className="mt-3 max-w-2xl text-white/80">A selection of recent installations across CCTV, alarms, access control, networking, sound and AV.</p>
         </div>
       </section>
       <section className="mx-auto max-w-6xl px-4 py-10">

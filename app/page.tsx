@@ -7,22 +7,32 @@ const SERVICES = [
   {
     title: "CCTV",
     text: "HD and IP camera systems with remote viewing on your phone, designed around your site and installed neatly.",
-    icon: "📹",
+    icon: "/icons/cctv.png",
   },
   {
-    title: "Intercoms & door entry",
-    text: "Audio and video door entry for homes, offices and multi-occupancy buildings, including app and PC answering.",
-    icon: "🔔",
+    title: "Intruder alarms",
+    text: "Wired and wireless alarm systems to protect homes and businesses, with app control and alerts.",
+    icon: "/icons/alarms.png",
   },
   {
-    title: "Access control",
-    text: "Fobs, cards, keypads and mobile credentials, with control over who can go where and when.",
-    icon: "🔐",
+    title: "Access control & intercoms",
+    text: "Fobs, cards, keypads and video door entry, so you control who comes in, and when, from anywhere.",
+    icon: "/icons/access-control.png",
   },
   {
     title: "WiFi & networks",
     text: "Reliable WiFi coverage, structured cabling and network infrastructure that the rest of your systems can depend on.",
-    icon: "📶",
+    icon: "/icons/wifi.png",
+  },
+  {
+    title: "PA & sound systems",
+    text: "Clear background music and public address for shops, offices, halls and venues.",
+    icon: "/icons/audio.png",
+  },
+  {
+    title: "TV, AV & digital signage",
+    text: "TV and screen installation, meeting-room AV and digital signage to get your message seen.",
+    icon: "/icons/tv-av.png",
   },
 ];
 
@@ -43,7 +53,7 @@ export default async function Home() {
             Security and connectivity, designed, installed and looked after properly.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80">
-            CCTV, intercoms, access control and WiFi networks for homes and businesses, with a client portal so you can
+            CCTV, alarms, access control, intercoms, WiFi, sound and AV for homes and businesses, with a client portal so you can
             log jobs and follow their progress at any time.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -56,10 +66,11 @@ export default async function Home() {
       {/* Services */}
       <section id="services" className="mx-auto max-w-6xl px-4 py-16 md:py-20">
         <h2 className="text-3xl font-bold text-brand-green-dark">What we do</h2>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {SERVICES.map((s) => (
             <div key={s.title} className="card">
-              <div className="text-3xl">{s.icon}</div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={s.icon} alt="" className="h-16 w-16" />
               <h3 className="mt-3 text-lg font-semibold text-brand-green">{s.title}</h3>
               <p className="mt-2 text-sm text-stone-600">{s.text}</p>
             </div>

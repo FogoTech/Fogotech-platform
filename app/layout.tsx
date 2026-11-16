@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "FogoTech | Security & Network Systems",
-  description: "CCTV, intercoms, access control and WiFi network installation and maintenance.",
+  description: "CCTV, intruder alarms, access control, intercoms, WiFi networks, PA and AV installation and maintenance in Manchester.",
 };
 
 export const viewport: Viewport = {
