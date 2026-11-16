@@ -43,6 +43,7 @@ type Enquiry = {
   id: string; name: string; phone: string | null; email: string | null; service: string | null; postcode: string | null;
   message: string; status: string; office_notes: string | null; customer_id: string | null; created_at: string;
   source: string; priority: string; actions: string[]; action_other: string | null;
+  actions_done: Record<string, { at: string; by: string }>;
 };
 
 function readFollowUp(formData: FormData) {
@@ -84,6 +85,19 @@ async function updateEnquiry(formData: FormData) {
   }).eq("id", String(formData.get("id")));
   if (error) redirect(`/office/enquiries?error=${encodeURIComponent(error.message)}`);
   redirect(`/office/enquiries?tab=${formData.get("tab") ?? "open"}&saved=1#e-${formData.get("id")}`);
+}
+
+async function toggleAction(formData: FormData) {
+  "use server";
+  const { supabase, profile } = await requireProfile(["office"]);
+  const id = String(formData.get("id"));
+  const action = String(formData.get("action"));
+  const { data: e } = await supabase.from("enquiries").select("actions_done").eq("id", id).single();
+  const done = { ...((e?.actions_done as Record<string, unknown>) ?? {}) };
+  if (done[action]) delete done[action];
+  else done[action] = { at: new Date().toISOString(), by: profile.full_name || profile.email || "Office" };
+  await supabase.from("enquiries").update({ actions_done: done }).eq("id", id);
+  redirect(`/office/enquiries?tab=${formData.get("tab") ?? "open"}#e-${id}`);
 }
 
 async function convertToCustomer(formData: FormData) {
@@ -204,10 +218,11 @@ export default async function Enquiries({ searchParams }: {
         {enquiries.map((e) => {
           const st = STATUSES.find((s) => s.value === e.status)!;
           const pr = PRIORITIES.find((x) => x.value === e.priority) ?? PRIORITIES[3];
-          const actionLabels = [
-            ...ACTIONS.filter((a) => e.actions?.includes(a.value)).map((a) => a.label),
-            ...(e.action_other ? [e.action_other] : []),
+          const actionItems = [
+            ...ACTIONS.filter((a) => e.actions?.includes(a.value)).map((a) => ({ key: a.value, label: a.label })),
+            ...(e.action_other ? [{ key: "other", label: e.action_other }] : []),
           ];
+          const doneCount = actionItems.filter((a) => e.actions_done?.[a.key]).length;
           return (
             <div key={e.id} id={`e-${e.id}`} className={`card border-l-8 text-sm ${pr.border}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
@@ -228,10 +243,30 @@ export default async function Enquiries({ searchParams }: {
                 {e.email && <a className="font-semibold text-brand-green underline" href={`mailto:${e.email}`}>{e.email}</a>}
               </div>
               <p className="mt-3 whitespace-pre-wrap text-stone-700">{e.message}</p>
-              {actionLabels.length > 0 && (
-                <ul className="mt-3 flex flex-wrap gap-1.5">
-                  {actionLabels.map((l) => <li key={l} className="rounded-md bg-brand-green-light px-2 py-1 text-xs font-medium text-brand-green-dark">☐ {l}</li>)}
-                </ul>
+              {actionItems.length > 0 && (
+                <div className="mt-3 rounded-lg bg-stone-50 p-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-stone-500">
+                    Actions · {doneCount} of {actionItems.length} done
+                  </div>
+                  <ul className="space-y-1.5">
+                    {actionItems.map((a) => {
+                      const d = e.actions_done?.[a.key];
+                      return (
+                        <li key={a.key}>
+                          <form action={toggleAction} className="flex items-start gap-2">
+                            <input type="hidden" name="id" value={e.id} /><input type="hidden" name="action" value={a.key} /><input type="hidden" name="tab" value={tab} />
+                            <button type="submit" aria-label={d ? `Mark "${a.label}" not done` : `Mark "${a.label}" done`}
+                              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs ${d ? "border-brand-green bg-brand-green text-white" : "border-stone-400 bg-white"}`}>
+                              {d ? "✓" : ""}
+                            </button>
+                            <span className={d ? "text-stone-400 line-through" : "font-medium text-stone-800"}>{a.label}</span>
+                            {d && <span className="text-xs text-stone-500">· {formatDateTime(d.at)} · {d.by}</span>}
+                          </form>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               )}
               {e.office_notes && <p className="mt-2 text-xs text-stone-600">📝 {e.office_notes}</p>}
 
