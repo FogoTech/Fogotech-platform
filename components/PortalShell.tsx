@@ -19,7 +19,7 @@ const NAV: Record<Profile["role"], NavItem[]> = {
     { href: "/office/enquiries", label: "Enquiries" },
     { href: "/office/users", label: "Users & logins" },
     { href: "/office/gallery", label: "Website gallery" },
-    { href: "/office/settings", label: "Website contact details" },
+    { href: "/office/settings", label: "Website & email settings" },
   ],
   engineer: [{ href: "/engineer", label: "My jobs" }],
 };
