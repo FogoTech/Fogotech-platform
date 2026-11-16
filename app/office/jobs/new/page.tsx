@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { Notice, PageHeader } from "@/components/ui";
 import { JOB_TYPES } from "@/lib/labels";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function createJob(formData: FormData) {
   "use server";
@@ -58,7 +59,7 @@ export default async function NewOfficeJob({ searchParams }: { searchParams: Pro
           <div><label className="label">Short summary</label><input className="input" name="title" required maxLength={120} /></div>
           <div><label className="label">Details</label><textarea className="input min-h-32" name="description" /></div>
           <div><label className="label">Customer reference / PO</label><input className="input" name="customer_reference" /></div>
-          <button className="btn-primary">Create job</button>
+          <SubmitButton className="btn-primary">Create job</SubmitButton>
         </form>
       )}
     </>

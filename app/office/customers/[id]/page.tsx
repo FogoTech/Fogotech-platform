@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { JobTable, Notice, PageHeader, JOB_SELECT, type JobRow } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function addSite(formData: FormData) {
   "use server";
@@ -64,7 +65,7 @@ export default async function CustomerDetail({ params, searchParams }: {
         <div><input className="input" name="town" placeholder="Town" /></div>
         <div><input className="input" name="postcode" placeholder="Postcode" /></div>
         <div className="md:col-span-2"><input className="input" name="access_notes" placeholder="Access notes" /></div>
-        <div><button className="btn-outline">Add site</button></div>
+        <div><SubmitButton className="btn-outline">Add site</SubmitButton></div>
       </form>
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Jobs</h2>

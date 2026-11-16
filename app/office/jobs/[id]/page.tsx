@@ -3,6 +3,7 @@ import { requireProfile } from "@/lib/auth";
 import { Notice, PageHeader, StatusBadge } from "@/components/ui";
 import { JOB_STATUSES, JOB_TYPES, formatDateTime } from "@/lib/labels";
 import { isoToLondonLocal, londonLocalToIso } from "@/lib/time";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function updateJob(formData: FormData) {
   "use server";
@@ -162,7 +163,7 @@ export default async function OfficeJob({ params, searchParams }: {
           <div><label className="label">Visit start</label><input className="input" type="datetime-local" name="scheduled_start" defaultValue={startDefault} /></div>
           <div><label className="label">Visit end (default +2h)</label><input className="input" type="datetime-local" name="scheduled_end" defaultValue={endDefault} /></div>
         </div>
-        <button className="btn-primary">Save job</button>
+        <SubmitButton className="btn-primary">Save job</SubmitButton>
       </form>
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Notes</h2>
@@ -181,7 +182,7 @@ export default async function OfficeJob({ params, searchParams }: {
         <input type="hidden" name="id" value={job.id} />
         <textarea className="input min-h-20" name="body" required placeholder="Add a note…" />
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="visible" /> Show this update to the customer</label>
-        <button className="btn-outline">Add note</button>
+        <SubmitButton className="btn-outline">Add note</SubmitButton>
       </form>
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Expenses</h2>
@@ -199,7 +200,7 @@ export default async function OfficeJob({ params, searchParams }: {
               {x.paid_by === "engineer" && !x.reimbursed && (
                 <form action={markReimbursed}>
                   <input type="hidden" name="id" value={job.id} /><input type="hidden" name="expense_id" value={x.id} />
-                  <button className="btn-outline text-xs">Mark reimbursed</button>
+                  <SubmitButton className="btn-outline text-xs">Mark reimbursed</SubmitButton>
                 </form>
               )}
             </li>
@@ -221,7 +222,7 @@ export default async function OfficeJob({ params, searchParams }: {
             {(engineers ?? []).map((e) => <option key={e.id} value={e.id}>{e.full_name || e.email}</option>)}
           </select>
         </div>
-        <div><button className="btn-outline">Add expense</button></div>
+        <div><SubmitButton className="btn-outline">Add expense</SubmitButton></div>
       </form>
     </>
   );

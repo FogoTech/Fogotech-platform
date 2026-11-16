@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { Notice, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function addSite(formData: FormData) {
   "use server";
@@ -46,7 +47,7 @@ export default async function Sites({ searchParams }: { searchParams: Promise<{ 
         <div><label className="label">Town / city</label><input className="input" name="town" /></div>
         <div><label className="label">Postcode</label><input className="input" name="postcode" /></div>
         <div className="md:col-span-2"><label className="label">Access notes</label><input className="input" name="access_notes" placeholder="Parking, key holder, opening hours…" /></div>
-        <div><button className="btn-primary">Add site</button></div>
+        <div><SubmitButton className="btn-primary">Add site</SubmitButton></div>
       </form>
     </>
   );

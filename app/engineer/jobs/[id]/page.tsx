@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { Notice, PageHeader, StatusBadge } from "@/components/ui";
 import { ENGINEER_STATUSES, formatDateTime, jobTypeLabel, statusLabel } from "@/lib/labels";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function setStatus(formData: FormData) {
   "use server";
@@ -79,7 +80,7 @@ export default async function EngineerJob({ params, searchParams }: {
             {ENGINEER_STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
           </select>
         </div>
-        <button className="btn-primary">Update</button>
+        <SubmitButton className="btn-primary">Update</SubmitButton>
       </form>
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Notes</h2>
@@ -88,7 +89,7 @@ export default async function EngineerJob({ params, searchParams }: {
         <input type="hidden" name="id" value={job.id} />
         <textarea className="input min-h-20" name="body" required placeholder="What was done, parts used, follow-ups…" />
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="visible" /> Show to customer</label>
-        <button className="btn-outline">Add note</button>
+        <SubmitButton className="btn-outline">Add note</SubmitButton>
       </form>
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Add an expense</h2>
@@ -97,7 +98,7 @@ export default async function EngineerJob({ params, searchParams }: {
         <div className="md:col-span-2"><input className="input" name="description" required placeholder="What was bought" /></div>
         <div><input className="input" name="amount" type="number" step="0.01" min="0" required placeholder="Amount £" /></div>
         <div><select className="input" name="paid_by"><option value="engineer">I paid (reimburse me)</option><option value="fogotech">Paid on FogoTech account</option></select></div>
-        <div><button className="btn-outline">Save expense</button></div>
+        <div><SubmitButton className="btn-outline">Save expense</SubmitButton></div>
       </form>
     </>
   );

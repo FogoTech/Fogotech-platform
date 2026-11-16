@@ -1,6 +1,7 @@
 import { Logo } from "@/components/Logo";
 import { requireProfile } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function Pending() {
   const { profile } = await requireProfile();
@@ -15,7 +16,7 @@ export default async function Pending() {
           company shortly, and you&apos;ll then see your sites and jobs here.
         </p>
         <form action="/auth/signout" method="post" className="mt-6">
-          <button className="btn-outline">Sign out</button>
+          <SubmitButton className="btn-outline">Sign out</SubmitButton>
         </form>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { Notice, PageHeader } from "@/components/ui";
 import { JOB_TYPES } from "@/lib/labels";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function logJob(formData: FormData) {
   "use server";
@@ -63,7 +64,7 @@ export default async function NewJob({ searchParams }: { searchParams: Promise<{
           <input className="input" id="customer_reference" name="customer_reference" />
         </div>
         <p className="text-xs text-stone-500">Photo uploads are coming next.</p>
-        <button className="btn-primary">Submit job</button>
+        <SubmitButton className="btn-primary">Submit job</SubmitButton>
       </form>
     </>
   );

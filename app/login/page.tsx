@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { Notice } from "@/components/ui";
 import { signIn, signUp, resetPassword } from "./actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 const MESSAGES: Record<string, string> = {
   "check-email": "Check your email to confirm your account, then sign in.",
@@ -31,7 +32,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <form action={signIn} className="space-y-4">
             <div><label className="label" htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" required autoComplete="email" /></div>
             <div><label className="label" htmlFor="password">Password</label><input className="input" id="password" name="password" type="password" required autoComplete="current-password" /></div>
-            <button className="btn-primary w-full">Sign in</button>
+            <SubmitButton className="btn-primary w-full">Sign in</SubmitButton>
             <div className="flex justify-between text-sm">
               <Link href="/login?mode=forgot" className="text-brand-green underline">Forgot password?</Link>
               <Link href="/login?mode=signup" className="text-brand-green underline">Create account</Link>
@@ -44,7 +45,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <div><label className="label" htmlFor="full_name">Your name</label><input className="input" id="full_name" name="full_name" required autoComplete="name" /></div>
             <div><label className="label" htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" required autoComplete="email" /></div>
             <div><label className="label" htmlFor="password">Password</label><input className="input" id="password" name="password" type="password" required minLength={8} autoComplete="new-password" /></div>
-            <button className="btn-primary w-full">Create account</button>
+            <SubmitButton className="btn-primary w-full">Create account</SubmitButton>
             <p className="text-center text-sm"><Link href="/login" className="text-brand-green underline">Back to sign in</Link></p>
           </form>
         )}
@@ -52,7 +53,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         {mode === "forgot" && (
           <form action={resetPassword} className="space-y-4">
             <div><label className="label" htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" required autoComplete="email" /></div>
-            <button className="btn-primary w-full">Send reset link</button>
+            <SubmitButton className="btn-primary w-full">Send reset link</SubmitButton>
             <p className="text-center text-sm"><Link href="/login" className="text-brand-green underline">Back to sign in</Link></p>
           </form>
         )}

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { Notice, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function updateUser(formData: FormData) {
   "use server";
@@ -65,7 +66,7 @@ export default async function Users({ searchParams }: { searchParams: Promise<{ 
             <div className="space-y-1">
               <label className="flex items-center gap-2"><input type="checkbox" name="is_subcontractor" defaultChecked={u.is_subcontractor} /> Sub-contractor</label>
               <label className="flex items-center gap-2"><input type="checkbox" name="active" defaultChecked={u.active} /> Active</label>
-              <button className="btn-outline w-full">Save</button>
+              <SubmitButton className="btn-outline w-full">Save</SubmitButton>
             </div>
           </form>
         ))}

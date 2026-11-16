@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { Notice } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function updatePassword(formData: FormData) {
   "use server";
@@ -20,7 +21,7 @@ export default async function PasswordPage({ searchParams }: { searchParams: Pro
         <h1 className="text-center text-xl font-bold text-brand-green-dark">Set a new password</h1>
         {error && <Notice tone="error">{error}</Notice>}
         <input className="input" name="password" type="password" minLength={8} required autoComplete="new-password" placeholder="New password" />
-        <button className="btn-primary w-full">Save password</button>
+        <SubmitButton className="btn-primary w-full">Save password</SubmitButton>
       </form>
     </div>
   );

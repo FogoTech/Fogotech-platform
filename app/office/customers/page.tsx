@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { Notice, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/SubmitButton";
 
 async function addCustomer(formData: FormData) {
   "use server";
@@ -52,7 +53,7 @@ export default async function Customers({ searchParams }: { searchParams: Promis
         <div className="md:col-span-2"><label className="label">Billing address</label><input className="input" name="billing_address_line1" /></div>
         <div><label className="label">Town</label><input className="input" name="billing_town" /></div>
         <div><label className="label">Postcode</label><input className="input" name="billing_postcode" /></div>
-        <div><button className="btn-primary">Add customer</button></div>
+        <div><SubmitButton className="btn-primary">Add customer</SubmitButton></div>
       </form>
     </>
   );
