@@ -5,7 +5,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const EMAIL_FROM = Deno.env.get("EMAIL_FROM") ?? "FogoTech <onboarding@resend.dev>";
+const EMAIL_FROM = Deno.env.get("EMAIL_FROM") ?? "FogoTech <enquiries@fogotech.co.uk>";
 const SITE_URL = Deno.env.get("SITE_URL") ?? "https://fogotech-platform.vercel.app";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
