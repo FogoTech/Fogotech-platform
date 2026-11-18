@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
+import { JobPhotos } from "@/components/JobPhotos";
+import { JobPhotoUploader } from "@/components/JobPhotoUploader";
 import { Notice, PageHeader, StatusBadge } from "@/components/ui";
 import { JOB_STATUSES, JOB_TYPES, formatDateTime } from "@/lib/labels";
 import { isoToLondonLocal, londonLocalToIso } from "@/lib/time";
@@ -90,7 +92,7 @@ export default async function OfficeJob({ params, searchParams }: {
 }) {
   const { id } = await params;
   const sp = await searchParams;
-  const { supabase } = await requireProfile(["office"]);
+  const { supabase, profile } = await requireProfile(["office"]);
   const { data: job } = await supabase
     .from("jobs")
     .select("*, customers(name, phone, email), sites(name, address_line1, address_line2, town, postcode, access_notes)")
@@ -166,6 +168,10 @@ export default async function OfficeJob({ params, searchParams }: {
         </div>
         <SubmitButton className="btn-primary">Save job</SubmitButton>
       </form>
+
+      <h2 className="mb-3 mt-8 text-lg font-semibold">Photos</h2>
+      <JobPhotos jobId={job.id} />
+      <div className="mt-3"><JobPhotoUploader jobId={job.id} userId={profile.id} stages={["in_progress", "completed", "request"]} /></div>
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Notes</h2>
       <ul className="space-y-2">

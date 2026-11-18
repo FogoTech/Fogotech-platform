@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
+import { JobPhotos } from "@/components/JobPhotos";
+import { JobPhotoUploader } from "@/components/JobPhotoUploader";
 import { Notice, PageHeader, StatusBadge } from "@/components/ui";
 import { formatDate, formatDateTime, jobTypeLabel } from "@/lib/labels";
 
@@ -9,7 +11,7 @@ export default async function CustomerJob({ params, searchParams }: {
 }) {
   const { id } = await params;
   const { logged } = await searchParams;
-  const { supabase } = await requireProfile(["customer"]);
+  const { supabase, profile } = await requireProfile(["customer"]);
   const { data: job } = await supabase
     .from("jobs")
     .select("*, sites(name, address_line1, town, postcode)")
@@ -20,7 +22,7 @@ export default async function CustomerJob({ params, searchParams }: {
 
   return (
     <>
-      {logged && <Notice tone="success">Thanks, your job has been logged as {job.job_number}. We&apos;ll be in touch to arrange a visit.</Notice>}
+      {logged && <Notice tone="success">Thanks, your job has been logged as {job.job_number}. We&apos;ll be in touch to arrange a visit. If you have photos of the problem, add them below.</Notice>}
       <PageHeader title={`${job.job_number} · ${job.title}`} action={<StatusBadge status={job.status} />} />
       <div className="grid gap-4 md:grid-cols-2">
         <div className="card space-y-2 text-sm">
@@ -35,6 +37,12 @@ export default async function CustomerJob({ params, searchParams }: {
           <p className="whitespace-pre-wrap text-stone-700">{job.description || "—"}</p>
         </div>
       </div>
+      <h2 className="mb-3 mt-8 text-lg font-semibold">Photos</h2>
+      <JobPhotos jobId={job.id} />
+      {!["completed", "invoiced", "cancelled"].includes(job.status) && (
+        <div className="mt-3"><JobPhotoUploader jobId={job.id} userId={profile.id} stages={["request"]} label="Add photos of the problem" /></div>
+      )}
+
       <h2 className="mb-3 mt-8 text-lg font-semibold">Updates</h2>
       {notes && notes.length ? (
         <ul className="space-y-2">{notes.map((n) => <li key={n.id} className="card text-sm"><div className="text-xs text-stone-500">{formatDateTime(n.created_at)}</div><p className="mt-1 whitespace-pre-wrap">{n.body}</p></li>)}</ul>

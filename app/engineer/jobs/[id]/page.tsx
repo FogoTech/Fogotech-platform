@@ -1,5 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
+import { JobPhotos } from "@/components/JobPhotos";
+import { JobPhotoUploader } from "@/components/JobPhotoUploader";
 import { Notice, PageHeader, StatusBadge } from "@/components/ui";
 import { ENGINEER_STATUSES, formatDateTime, jobTypeLabel, statusLabel } from "@/lib/labels";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -44,7 +46,7 @@ export default async function EngineerJob({ params, searchParams }: {
 }) {
   const { id } = await params;
   const sp = await searchParams;
-  const { supabase } = await requireProfile(["engineer"]);
+  const { supabase, profile } = await requireProfile(["engineer"]);
   const { data: job } = await supabase.from("jobs")
     .select("*, customers(name), sites(name, address_line1, address_line2, town, postcode, access_notes)")
     .eq("id", id).single();
@@ -82,6 +84,10 @@ export default async function EngineerJob({ params, searchParams }: {
         </div>
         <SubmitButton className="btn-primary">Update</SubmitButton>
       </form>
+
+      <h2 className="mb-3 mt-8 text-lg font-semibold">Photos</h2>
+      <JobPhotos jobId={job.id} />
+      <div className="mt-3"><JobPhotoUploader jobId={job.id} userId={profile.id} stages={["in_progress", "completed"]} /></div>
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Notes</h2>
       <ul className="space-y-2">{(notes ?? []).map((n) => <li key={n.id} className="card text-sm"><div className="text-xs text-stone-500">{formatDateTime(n.created_at)}{n.visible_to_customer ? " · visible to customer" : ""}</div><p className="mt-1 whitespace-pre-wrap">{n.body}</p></li>)}</ul>

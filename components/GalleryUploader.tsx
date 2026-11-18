@@ -4,19 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { GALLERY_CATEGORIES } from "@/lib/site-shared";
-
-/** Shrinks a photo to max 2000px wide/high JPEG so pages load fast and uploads stay small. */
-async function shrink(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 2000 / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(bitmap.width * scale);
-  canvas.height = Math.round(bitmap.height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  return new Promise((resolve, reject) =>
-    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Could not process image"))), "image/jpeg", 0.85)
-  );
-}
+import { shrinkImage as shrink } from "@/lib/image";
 
 export function GalleryUploader({ userId }: { userId: string }) {
   const router = useRouter();

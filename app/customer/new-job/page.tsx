@@ -63,7 +63,7 @@ export default async function NewJob({ searchParams }: { searchParams: Promise<{
           <label className="label" htmlFor="customer_reference">Your reference / PO number (optional)</label>
           <input className="input" id="customer_reference" name="customer_reference" />
         </div>
-        <p className="text-xs text-stone-500">Photo uploads are coming next.</p>
+        <p className="text-xs text-brand-mute">You can add photos on the next screen.</p>
         <SubmitButton className="btn-primary">Submit job</SubmitButton>
       </form>
     </>
