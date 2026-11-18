@@ -30,7 +30,7 @@ export async function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-6 px-4 md:grid-cols-3">
         <div>
           <Logo light />
-          {s.areas_covered && <p className="mt-3">Covering {s.areas_covered}</p>}
+          {s.areas_covered && <p className="mt-3">{s.areas_covered}</p>}
         </div>
         <div className="space-y-1">
           {s.phone && <div>📞 <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="hover:text-white">{s.phone}</a></div>}
