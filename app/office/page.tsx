@@ -14,6 +14,7 @@ const TABS = [
 export default async function OfficeDashboard({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab = "awaiting" } = await searchParams;
   const { supabase } = await requireProfile(["office"]);
+  const { count: loginRequests } = await supabase.from("credential_access_requests").select("id", { count: "exact", head: true }).eq("status", "pending");
   const { count: newEnquiries } = await supabase.from("enquiries").select("id", { count: "exact", head: true }).eq("status", "new");
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(new Date());
   const { data: dueEnquiries } = await supabase.from("enquiries").select("follow_up_on")
@@ -31,6 +32,11 @@ export default async function OfficeDashboard({ searchParams }: { searchParams: 
   return (
     <>
       <PageHeader title="Office dashboard" action={<Link href="/office/jobs/new" className="btn-gold">+ New job</Link>} />
+      {!!loginRequests && (
+        <Link href="/office/login-requests" className="mb-4 block rounded-lg border border-brand-gold/50 bg-brand-gold-light px-4 py-3 text-sm font-medium text-brand-green-dark">
+          🔐 {loginRequests} engineer login {loginRequests === 1 ? "request" : "requests"} waiting — review
+        </Link>
+      )}
       {!!newEnquiries && (
         <Link href="/office/enquiries" className="mb-4 block rounded-lg border border-brand-gold/50 bg-brand-gold-light px-4 py-3 text-sm font-medium text-brand-green-dark">
           📩 {newEnquiries} new website {newEnquiries === 1 ? "enquiry" : "enquiries"} — view

@@ -1,10 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
+import { CredentialList, CREDENTIAL_SELECT, type CredentialRow } from "@/components/CredentialList";
+import { SubmitButton } from "@/components/SubmitButton";
 import { JobPhotos } from "@/components/JobPhotos";
 import { JobPhotoUploader } from "@/components/JobPhotoUploader";
 import { Notice, PageHeader, StatusBadge } from "@/components/ui";
 import { ENGINEER_STATUSES, formatDateTime, jobTypeLabel, statusLabel } from "@/lib/labels";
-import { SubmitButton } from "@/components/SubmitButton";
 
 async function setStatus(formData: FormData) {
   "use server";
@@ -41,6 +42,17 @@ async function addExpense(formData: FormData) {
   redirect(`/engineer/jobs/${id}?expense=1`);
 }
 
+async function requestLogins(formData: FormData) {
+  "use server";
+  const { supabase, profile } = await requireProfile(["engineer"]);
+  const id = String(formData.get("id"));
+  const { error } = await supabase.from("credential_access_requests").insert({
+    job_id: id, engineer_id: profile.id, reason: String(formData.get("reason") ?? "").trim().slice(0, 500) || null,
+  });
+  if (error) redirect(`/engineer/jobs/${id}?error=${encodeURIComponent(error.message)}`);
+  redirect(`/engineer/jobs/${id}?requested=1#logins`);
+}
+
 export default async function EngineerJob({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>>;
 }) {
@@ -53,6 +65,13 @@ export default async function EngineerJob({ params, searchParams }: {
   if (!job) notFound();
   const { data: notes } = await supabase.from("job_notes").select("id, body, created_at, visible_to_customer").eq("job_id", id).order("created_at");
   const site = job.sites;
+  const open = !["completed", "invoiced", "cancelled"].includes(job.status);
+  const { data: hasAccess } = await supabase.rpc("engineer_login_access", { p_customer: job.customer_id, p_site: job.site_id });
+  let credQuery = supabase.from("site_credentials").select(CREDENTIAL_SELECT).eq("customer_id", job.customer_id).order("label");
+  credQuery = job.site_id ? credQuery.or(`site_id.is.null,site_id.eq.${job.site_id}`) : credQuery;
+  const { data: creds } = hasAccess ? await credQuery : { data: [] };
+  const { data: lastReq } = await supabase.from("credential_access_requests").select("status, valid_until, created_at")
+    .eq("job_id", job.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
   const mapQuery = site ? encodeURIComponent([site.address_line1, site.town, site.postcode].filter(Boolean).join(", ")) : "";
 
   return (
@@ -84,6 +103,25 @@ export default async function EngineerJob({ params, searchParams }: {
         </div>
         <SubmitButton className="btn-primary">Update</SubmitButton>
       </form>
+
+      <h2 id="logins" className="mb-3 mt-8 text-lg font-semibold">Site logins</h2>
+      {sp.requested && <Notice tone="success">Request sent. You&apos;ll see the logins here once it&apos;s approved.</Notice>}
+      {hasAccess ? (
+        <CredentialList items={(creds ?? []) as unknown as CredentialRow[]} emptyText="No logins stored for this site." />
+      ) : !open ? (
+        <div className="card text-sm text-brand-mute">This job is closed.</div>
+      ) : lastReq?.status === "pending" ? (
+        <div className="card text-sm">⏳ Your request is waiting for the office to approve.</div>
+      ) : (
+        <form action={requestLogins} className="card space-y-3 text-sm">
+          <input type="hidden" name="id" value={job.id} />
+          {lastReq?.status === "declined" && <div className="text-red-700">Your last request was declined.</div>}
+          {lastReq?.status === "approved" && <div className="text-brand-mute">Your earlier access has expired.</div>}
+          <p>You don&apos;t have access to this site&apos;s logins. Ask the office and, once approved, you can view them until midnight.</p>
+          <input className="input" name="reason" placeholder="What do you need it for? (optional)" maxLength={500} />
+          <SubmitButton className="btn-primary">Request access</SubmitButton>
+        </form>
+      )}
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Photos</h2>
       <JobPhotos jobId={job.id} />

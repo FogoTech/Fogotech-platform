@@ -47,6 +47,7 @@ async function updateJob(formData: FormData) {
     scheduled_start,
     scheduled_end: scheduled_start ? scheduled_end : null,
     completed_at: status === "completed" ? new Date().toISOString() : null,
+    engineer_can_view_logins: formData.get("engineer_can_view_logins") === "on",
   }).eq("id", id);
   if (error) redirect(`/office/jobs/${id}?error=${encodeURIComponent(error.message)}`);
   redirect(`/office/jobs/${id}?saved=1`);
@@ -163,6 +164,10 @@ export default async function OfficeJob({ params, searchParams }: {
               {(engineers ?? []).map((e) => <option key={e.id} value={e.id}>{e.full_name || e.email}{e.is_subcontractor ? " (sub-contractor)" : ""}</option>)}
             </select>
           </div>
+          <label className="flex items-center gap-2 text-sm md:col-span-2">
+            <input type="checkbox" name="engineer_can_view_logins" defaultChecked={job.engineer_can_view_logins} />
+            🔐 Engineer can view this site&apos;s logins while the job is open
+          </label>
           <div><label className="label">Visit start</label><input className="input" type="datetime-local" name="scheduled_start" defaultValue={startDefault} /></div>
           <div><label className="label">Visit end (default +2h)</label><input className="input" type="datetime-local" name="scheduled_end" defaultValue={endDefault} /></div>
         </div>

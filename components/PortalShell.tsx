@@ -8,7 +8,7 @@ const NAV: Record<Profile["role"], NavItem[]> = {
     { href: "/customer", label: "Dashboard", icon: "🏠" },
     { href: "/customer/new-job", label: "Log a job", icon: "➕" },
     { href: "/customer/sites", label: "Sites", icon: "📍" },
-    { href: "/customer/logins", label: "Logins", icon: "🔑", soon: true },
+    { href: "/customer/logins", label: "Logins", icon: "🔑" },
     { href: "/customer/documents", label: "Forms & certificates", icon: "📄", soon: true },
   ],
   office: [
@@ -16,7 +16,8 @@ const NAV: Record<Profile["role"], NavItem[]> = {
     { href: "/office/jobs/new", label: "New job", icon: "➕" },
     { href: "/office/enquiries", label: "Enquiries", icon: "📩" },
     { href: "/office/customers", label: "Customers", icon: "👥" },
-    { href: "/office/users", label: "Users & logins", icon: "🔑" },
+    { href: "/office/login-requests", label: "Login access requests", icon: "🔐" },
+    { href: "/office/users", label: "Users & portal accounts", icon: "👤" },
     { href: "/office/gallery", label: "Website gallery", icon: "🖼️" },
     { href: "/office/settings", label: "Website & email settings", icon: "⚙️" },
   ],
