@@ -119,7 +119,7 @@ export default async function EngineerJob({ params, searchParams }: {
           {lastReq?.status === "approved" && <div className="text-brand-mute">Your earlier access has expired.</div>}
           <p>You don&apos;t have access to this site&apos;s logins. Ask the office and, once approved, you can view them until midnight.</p>
           <input className="input" name="reason" placeholder="What do you need it for? (optional)" maxLength={500} />
-          <SubmitButton className="btn-primary">Request access</SubmitButton>
+          <SubmitButton className="btn-primary" pendingText="Sending request…">Request access</SubmitButton>
         </form>
       )}
 

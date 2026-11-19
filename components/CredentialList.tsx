@@ -3,10 +3,11 @@ import { RevealButton } from "@/components/RevealButton";
 export type CredentialRow = {
   id: string; label: string; url: string | null; username: string | null; notes: string | null;
   site_id: string | null; category_id: string | null;
+  visibility?: string; access_level_id?: string | null; assigned_profile_id?: string | null;
   sites?: { name: string } | null; credential_categories?: { name: string } | null;
 };
 
-export const CREDENTIAL_SELECT = "id, label, url, username, notes, site_id, category_id, sites(name), credential_categories(name)";
+export const CREDENTIAL_SELECT = "id, label, url, username, notes, site_id, category_id, visibility, access_level_id, assigned_profile_id, sites(name), credential_categories(name)";
 
 /** Read-only list of logins with a reveal button. Used by customers and engineers. */
 export function CredentialList({ items, showCount = false, emptyText = "No logins stored yet." }: {
@@ -28,6 +29,9 @@ export function CredentialList({ items, showCount = false, emptyText = "No login
               <div key={c.id} className="card text-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="font-semibold">{c.label}</div>
+                  {c.visibility === "fogotech" && (
+                    <span className="rounded-full bg-brand-green-dark px-2 py-0.5 text-xs text-white">FogoTech admin</span>
+                  )}
                   {c.credential_categories?.name && (
                     <span className="rounded-full bg-brand-green-light px-2 py-0.5 text-xs text-brand-green-dark">{c.credential_categories.name}</span>
                   )}

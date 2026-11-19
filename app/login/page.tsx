@@ -32,7 +32,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <form action={signIn} className="space-y-4">
             <div><label className="label" htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" required autoComplete="email" /></div>
             <div><label className="label" htmlFor="password">Password</label><input className="input" id="password" name="password" type="password" required autoComplete="current-password" /></div>
-            <SubmitButton className="btn-primary w-full">Sign in</SubmitButton>
+            <SubmitButton className="btn-primary w-full" pendingText="Signing in…">Sign in</SubmitButton>
             <div className="flex justify-between text-sm">
               <Link href="/login?mode=forgot" className="text-brand-green underline">Forgot password?</Link>
               <Link href="/login?mode=signup" className="text-brand-green underline">Create account</Link>
@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <div><label className="label" htmlFor="full_name">Your name</label><input className="input" id="full_name" name="full_name" required autoComplete="name" /></div>
             <div><label className="label" htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" required autoComplete="email" /></div>
             <div><label className="label" htmlFor="password">Password</label><input className="input" id="password" name="password" type="password" required minLength={8} autoComplete="new-password" /></div>
-            <SubmitButton className="btn-primary w-full">Create account</SubmitButton>
+            <SubmitButton className="btn-primary w-full" pendingText="Creating account…">Create account</SubmitButton>
             <p className="text-center text-sm"><Link href="/login" className="text-brand-green underline">Back to sign in</Link></p>
           </form>
         )}
@@ -53,7 +53,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         {mode === "forgot" && (
           <form action={resetPassword} className="space-y-4">
             <div><label className="label" htmlFor="email">Email</label><input className="input" id="email" name="email" type="email" required autoComplete="email" /></div>
-            <SubmitButton className="btn-primary w-full">Send reset link</SubmitButton>
+            <SubmitButton className="btn-primary w-full" pendingText="Sending…">Send reset link</SubmitButton>
             <p className="text-center text-sm"><Link href="/login" className="text-brand-green underline">Back to sign in</Link></p>
           </form>
         )}

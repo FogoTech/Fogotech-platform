@@ -109,7 +109,7 @@ export default async function Contact({ searchParams }: { searchParams: Promise<
               </div>
               <div><label className="label" htmlFor="message">Message</label><textarea className="input min-h-36" id="message" name="message" required maxLength={4000} placeholder="Tell us a bit about the property and what you're looking for" /></div>
               <p className="text-xs text-stone-500">We only use your details to reply to your enquiry.</p>
-              <SubmitButton className="btn-primary">Send message</SubmitButton>
+              <SubmitButton className="btn-primary" pendingText="Sending…">Send message</SubmitButton>
             </form>
           )}
         </div>
