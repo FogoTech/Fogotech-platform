@@ -41,6 +41,7 @@ async function updateJob(formData: FormData) {
 
   const { error } = await supabase.from("jobs").update({
     title: get("title"),
+    site_id: get("site_id"),
     description: get("description"),
     job_type: get("job_type"),
     status,
@@ -100,10 +101,11 @@ export default async function OfficeJob({ params, searchParams }: {
     .select("*, customers(name, phone, email), sites(name, address_line1, address_line2, town, postcode, access_notes)")
     .eq("id", id).single();
   if (!job) notFound();
-  const [{ data: engineers }, { data: notes }, { data: expenses }] = await Promise.all([
+  const [{ data: engineers }, { data: notes }, { data: expenses }, { data: customerSites }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, email, is_subcontractor").eq("role", "engineer").eq("active", true).order("full_name"),
     supabase.from("job_notes").select("id, body, visible_to_customer, created_at, author:profiles(full_name)").eq("job_id", id).order("created_at"),
     supabase.from("job_expenses").select("*, engineer:profiles(full_name)").eq("job_id", id).order("created_at"),
+    supabase.from("sites").select("id, name, postcode").eq("customer_id", job.customer_id).order("name"),
   ]);
 
   const startDefault = sp.s ?? isoToLondonLocal(job.scheduled_start);
@@ -130,6 +132,7 @@ export default async function OfficeJob({ params, searchParams }: {
               {site.access_notes && <div className="mt-1 text-xs text-stone-500">Access: {site.access_notes}</div>}
             </div>
           )}
+          {!site && <div className="mt-3 rounded bg-brand-gold-light px-2 py-1 text-xs text-brand-gold-dark">No site chosen – pick one below so it shows on reports.</div>}
           {job.customer_reference && <div className="mt-3 text-stone-600">Customer ref: {job.customer_reference}</div>}
         </div>
         <div className="card text-sm text-stone-600">
@@ -149,6 +152,13 @@ export default async function OfficeJob({ params, searchParams }: {
         )}
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2"><label className="label">Summary</label><input className="input" name="title" defaultValue={job.title} required /></div>
+          <div className="md:col-span-2">
+            <label className="label">Site</label>
+            <select className="input" name="site_id" defaultValue={job.site_id ?? ""}>
+              <option value="">No specific site</option>
+              {(customerSites ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}{x.postcode ? ` (${x.postcode})` : ""}</option>)}
+            </select>
+          </div>
           <div className="md:col-span-2"><label className="label">Details</label><textarea className="input min-h-24" name="description" defaultValue={job.description ?? ""} /></div>
           <div>
             <label className="label">Type</label>

@@ -43,6 +43,13 @@ export async function saveReport(formData: FormData) {
   }).eq("id", id);
   if (error) redirect(`${back}?error=${encodeURIComponent(error.message)}`);
 
+  // Job without a site: set it from the report
+  const jobSite = get("job_site_id");
+  if (jobSite) {
+    const { data: rep } = await supabase.from("job_reports").select("job_id").eq("id", id).single();
+    if (rep) await supabase.from("jobs").update({ site_id: jobSite }).eq("id", rep.job_id).is("site_id", null);
+  }
+
   // Photos: each job photo has a "section" choice (blank = not in the report)
   const photoIds = formData.getAll("photo_ids").map(String);
   const rows = photoIds

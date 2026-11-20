@@ -9,7 +9,13 @@ async function createJob(formData: FormData) {
   const { supabase, profile } = await requireProfile(["office"]);
   const get = (k: string) => String(formData.get(k) ?? "").trim() || null;
   const siteValue = get("site_id");
-  const [customer_id, site_id] = siteValue?.includes(":") ? siteValue.split(":") : [get("customer_id"), null];
+  const [customer_id, chosenSite] = siteValue?.includes(":") ? siteValue.split(":") : [get("customer_id"), null];
+  let site_id = chosenSite || null;
+  if (!site_id && customer_id) {
+    // If the customer only has one site, use it
+    const { data: only } = await supabase.from("sites").select("id").eq("customer_id", customer_id).limit(2);
+    if (only?.length === 1) site_id = only[0].id;
+  }
   const { data, error } = await supabase.from("jobs").insert({
     customer_id, site_id: site_id || null,
     job_type: get("job_type"),

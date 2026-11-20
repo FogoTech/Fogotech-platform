@@ -19,9 +19,9 @@ export async function ReportEditor({ id, sp }: { id: string; sp: { error?: strin
   const { supabase, profile } = await requireProfile(["office", "engineer"]);
   const base = profile.role === "office" ? "office" : "engineer";
   const { data: r } = await supabase.from("job_reports")
-    .select("*, jobs(id, job_number, title, customers(name, email), sites(name, postcode))").eq("id", id).maybeSingle();
+    .select("*, jobs(id, job_number, title, customer_id, customers(name, email), sites(name, postcode))").eq("id", id).maybeSingle();
   if (!r) notFound();
-  const job = r.jobs as unknown as { id: string; job_number: string; title: string; customers: { name: string; email: string | null } | null; sites: { name: string; postcode: string | null } | null };
+  const job = r.jobs as unknown as { id: string; job_number: string; title: string; customer_id: string; customers: { name: string; email: string | null } | null; sites: { name: string; postcode: string | null } | null };
 
   const [{ data: photos }, { data: chosen }] = await Promise.all([
     supabase.from("job_photos").select("id, storage_path, caption, stage, created_at").eq("job_id", job.id).order("created_at"),
@@ -30,6 +30,7 @@ export async function ReportEditor({ id, sp }: { id: string; sp: { error?: strin
   const { data: signed } = photos?.length
     ? await supabase.storage.from("job-photos").createSignedUrls(photos.map((p) => p.storage_path), 3600)
     : { data: [] };
+  const { data: customerSites } = job.sites ? { data: [] } : await supabase.from("sites").select("id, name, postcode").eq("customer_id", job.customer_id).order("name");
   const url = (path: string) => signed?.find((s) => s.path === path)?.signedUrl ?? undefined;
   const pick = new Map((chosen ?? []).map((c) => [c.photo_id, c]));
   const ordered = [...(photos ?? [])].sort((a, b) => (pick.get(a.id)?.sort_order ?? 999) - (pick.get(b.id)?.sort_order ?? 999));
@@ -60,6 +61,15 @@ export async function ReportEditor({ id, sp }: { id: string; sp: { error?: strin
         <div className="card grid gap-3 md:grid-cols-2">
           <div><label className="label">Visit date</label><input className="input" type="date" name="visit_date" defaultValue={r.visit_date ?? ""} /></div>
           <div><label className="label">Engineer</label><input className="input" name="engineer_name" defaultValue={r.engineer_name ?? ""} /></div>
+          {!job.sites && (
+            <div className="md:col-span-2">
+              <label className="label">Site <span className="font-normal text-brand-gold-dark">(this job has no site yet)</span></label>
+              <select className="input" name="job_site_id" defaultValue={customerSites?.length === 1 ? customerSites[0].id : ""}>
+                <option value="">No specific site</option>
+                {(customerSites ?? []).map((x) => <option key={x.id} value={x.id}>{x.name}{x.postcode ? ` (${x.postcode})` : ""}</option>)}
+              </select>
+            </div>
+          )}
         </div>
 
         {SECTIONS.map((s) => (
