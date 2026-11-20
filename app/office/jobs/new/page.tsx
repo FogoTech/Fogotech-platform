@@ -23,13 +23,17 @@ async function createJob(formData: FormData) {
   redirect(`/office/jobs/${data!.id}`);
 }
 
-export default async function NewOfficeJob({ searchParams }: { searchParams: Promise<{ error?: string; customer?: string }> }) {
+export default async function NewOfficeJob({ searchParams }: { searchParams: Promise<{ error?: string; customer?: string; site?: string }> }) {
   const sp = await searchParams;
   const { supabase } = await requireProfile(["office"]);
   const { data: customers } = await supabase.from("customers").select("id, name, sites(id, name, postcode)").order("name");
+  const siteOwner = sp.site ? customers?.find((c) => (c.sites ?? []).some((s: { id: string }) => s.id === sp.site)) : undefined;
+  const preselect = siteOwner ? `${siteOwner.id}:${sp.site}` : sp.customer && customers?.some((c) => c.id === sp.customer) ? `${sp.customer}:` : "";
+  const back = siteOwner ? `/office/sites/${sp.site}` : sp.customer ? `/office/customers/${sp.customer}` : null;
 
   return (
     <>
+      {back && <a href={back} className="mb-2 inline-block text-sm text-brand-green hover:underline">← Back</a>}
       <PageHeader title="New job" />
       {sp.error && <Notice tone="error">{sp.error}</Notice>}
       {!customers?.length ? (
@@ -38,7 +42,7 @@ export default async function NewOfficeJob({ searchParams }: { searchParams: Pro
         <form action={createJob} className="card max-w-2xl space-y-4">
           <div>
             <label className="label">Customer &amp; site</label>
-            <select className="input" name="site_id" required defaultValue="">
+            <select className="input" name="site_id" required defaultValue={preselect}>
               <option value="" disabled>Choose…</option>
               {customers.map((c) => (
                 <optgroup key={c.id} label={c.name}>

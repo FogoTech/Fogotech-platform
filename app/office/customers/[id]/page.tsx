@@ -185,10 +185,13 @@ export default async function CustomerDetail({ params, searchParams }: {
     supabase.from("jobs").select(JOB_SELECT).eq("customer_id", id).order("created_at", { ascending: false }),
     supabase.from("profiles").select("id, full_name, email").eq("customer_id", id),
   ]);
+  const siteJobCounts = new Map<string, number>();
+  const { data: jobSites } = await supabase.from("jobs").select("site_id").eq("customer_id", id).not("site_id", "is", null);
+  for (const j of jobSites ?? []) siteJobCounts.set(j.site_id as string, (siteJobCounts.get(j.site_id as string) ?? 0) + 1);
 
   return (
     <>
-      <PageHeader title={c.name} action={<Link href="/office/jobs/new" className="btn-gold">+ New job</Link>} />
+      <PageHeader title={c.name} action={<Link href={`/office/jobs/new?customer=${id}`} className="btn-gold">+ New job</Link>} />
       {sp.error && <Notice tone="error">{sp.error}</Notice>}
       <div className="grid gap-4 md:grid-cols-2">
         <div className="card text-sm">
@@ -202,14 +205,22 @@ export default async function CustomerDetail({ params, searchParams }: {
         </div>
       </div>
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Sites</h2>
+      <h2 className="mb-1 mt-8 text-lg font-semibold">Sites</h2>
+      <p className="mb-3 text-xs text-brand-mute">Click a site to see its jobs, logins and history.</p>
       <div className="grid gap-3 md:grid-cols-2">
         {(sites ?? []).map((s) => (
-          <div key={s.id} className="card text-sm">
-            <div className="font-semibold text-brand-green">{s.name}</div>
+          <Link key={s.id} href={`/office/sites/${s.id}`} className="card block text-sm transition hover:border-brand-green hover:shadow-md">
+            <div className="flex items-start justify-between gap-2">
+              <div className="font-semibold text-brand-green">{s.name}</div>
+              {(siteJobCounts.get(s.id) ?? 0) > 0 && (
+                <span className="shrink-0 rounded-full bg-brand-gold-light px-2 py-0.5 text-xs text-brand-gold-dark">
+                  {siteJobCounts.get(s.id)} job{siteJobCounts.get(s.id) === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
             <div className="text-stone-600">{[s.address_line1, s.address_line2, s.town, s.postcode].filter(Boolean).join(", ")}</div>
             {s.access_notes && <div className="mt-1 text-xs text-stone-500">Access: {s.access_notes}</div>}
-          </div>
+          </Link>
         ))}
       </div>
       <form action={addSite} className="card mt-3 grid gap-3 md:grid-cols-2">
