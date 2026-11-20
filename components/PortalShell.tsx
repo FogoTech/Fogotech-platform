@@ -17,6 +17,7 @@ const NAV: Record<Profile["role"], NavItem[]> = {
     { href: "/office/enquiries", label: "Enquiries", icon: "📩" },
     { href: "/office/customers", label: "Customers", icon: "👥" },
     { href: "/office/login-requests", label: "Login access requests", icon: "🔐" },
+    { href: "/office/archive", label: "Archive (Tradify)", icon: "🗄️" },
     { href: "/office/users", label: "Users & portal accounts", icon: "👤" },
     { href: "/office/gallery", label: "Website gallery", icon: "🖼️" },
     { href: "/office/settings", label: "Website & email settings", icon: "⚙️" },

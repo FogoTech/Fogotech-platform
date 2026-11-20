@@ -5,7 +5,8 @@ import { JobTable, Notice, PageHeader, JOB_SELECT, type JobRow } from "@/compone
 import { SubmitButton } from "@/components/SubmitButton";
 import { RevealButton } from "@/components/RevealButton";
 import { CREDENTIAL_SELECT, type CredentialRow } from "@/components/CredentialList";
-import { formatDateTime } from "@/lib/labels";
+import { formatDate, formatDateTime } from "@/lib/labels";
+import { money } from "@/lib/money";
 
 async function addSite(formData: FormData) {
   "use server";
@@ -171,6 +172,13 @@ export default async function CustomerDetail({ params, searchParams }: {
     supabase.from("profiles").select("id, full_name, email, access_level_id").eq("customer_id", id).order("full_name"),
   ]);
   const levels = (levelData ?? []) as Level[];
+  const tradifyId = (c as { tradify_customer_id?: string | null }).tradify_customer_id;
+  const [{ data: oldQuotes }, { data: oldInvoices }] = tradifyId
+    ? await Promise.all([
+        supabase.from("tradify_quotes").select("id, quote_number, quote_date, total, reference").eq("customer_id", tradifyId).order("quote_number", { ascending: false }),
+        supabase.from("tradify_invoices").select("id, invoice_number, invoice_date, total, reference").eq("customer_id", tradifyId).order("invoice_number", { ascending: false }),
+      ])
+    : [{ data: [] }, { data: [] }];
   const accounts = (accountData ?? []) as Account[];
   const [{ data: sites }, { data: jobs }, { data: logins }] = await Promise.all([
     supabase.from("sites").select("*").eq("customer_id", id).order("name"),
@@ -312,6 +320,32 @@ export default async function CustomerDetail({ params, searchParams }: {
             })}
           </ul>
         </details>
+      )}
+
+      {tradifyId && (
+        <>
+          <h2 className="mb-3 mt-8 text-lg font-semibold">Tradify history <span className="text-sm font-normal text-brand-mute">(archive, read-only)</span></h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {[{ title: "Estimates", rows: oldQuotes ?? [], kind: "estimates", num: "quote_number", date: "quote_date" },
+              { title: "Invoices", rows: oldInvoices ?? [], kind: "invoices", num: "invoice_number", date: "invoice_date" }].map((g) => (
+              <div key={g.kind} className="card text-sm">
+                <div className="mb-2 font-semibold">{g.title} ({g.rows.length})</div>
+                {g.rows.length ? (
+                  <ul className="space-y-1">
+                    {(g.rows as Record<string, unknown>[]).map((r) => (
+                      <li key={String(r.id)}>
+                        <Link href={`/office/archive/${g.kind}/${r.id}`} className="flex justify-between gap-2 hover:underline">
+                          <span><span className="text-brand-mute">{String(r[g.num])}</span> {formatDate(r[g.date] as string | null)}{r.reference ? ` · ${r.reference}` : ""}</span>
+                          <span className="font-medium">{money(r.total as number)}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <div className="text-brand-mute">None.</div>}
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Jobs</h2>
