@@ -272,9 +272,9 @@ Deno.serve(async (req) => {
     const job = r!.jobs as any;
     const officeEmail = settings?.email ?? "office@fogotech.co.uk";
     const html = wrapEmail(`<p>${esc(greeting?.trim() || "Hi,")}</p>
-      <p>Please see attached report.</p>
+      <p>Please find attached our report from our recent visit for your reference.</p>
       ${message?.trim() ? `<p style="white-space:pre-wrap">${esc(message.trim())}</p>` : ""}
-      <p>Feel free to contact us if you need any further assistance.</p>
+      <p>If you have any questions or need any further assistance, please don&#39;t hesitate to get in touch.</p>
       <p>Kind regards,</p>${signature(settings)}`);
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
