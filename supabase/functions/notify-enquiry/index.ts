@@ -38,6 +38,7 @@ function signature(s: { phone?: string | null; email?: string | null; address?: 
     <img src="https://www.fogotech.co.uk/brand/email-signature.png" width="160" alt="FogoTech" style="display:block;margin-bottom:8px">
     <div style="font-weight:bold;font-size:16px">FogoTech Ltd</div>
     ${line("Phone", s.phone)}${line("Email", s.email)}
+    <div>Web: <a href="https://www.fogotech.co.uk" style="color:#18803a;text-decoration:none">www.fogotech.co.uk</a></div>
     ${address ? `<div style="font-weight:bold;color:#15201a">${esc(address)}</div>` : ""}
   </td></tr></table>`;
 }
