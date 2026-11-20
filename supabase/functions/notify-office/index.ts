@@ -12,9 +12,9 @@ const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SE
 const esc = (s: unknown) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
-const wrap = (body: string) => `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#15201a">
-  <div style="background:#297542;color:#e6be31;padding:14px 20px;font-weight:800;letter-spacing:2px;border-bottom:5px solid #e6be31">FOGO<span style="color:#fff">TECH</span></div>
-  <div style="padding:20px;border:1px solid #e4e2d6;border-top:0">${body}</div></div>`;
+const wrap = (body: string) => `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#15201a;background:#ffffff">
+  <img src="https://www.fogotech.co.uk/brand/email-header.png" width="560" alt="FogoTech" style="display:block;width:100%;max-width:560px;height:auto;border:0">
+  <div style="padding:20px 24px;border:1px solid #e4e2d6;border-top:0">${body}</div></div>`;
 const button = (href: string, text: string) =>
   `<p><a href="${href}" style="background:#18803a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">${text}</a></p>`;
 

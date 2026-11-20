@@ -25,9 +25,9 @@ async function send(to: string[], subject: string, html: string, replyTo?: strin
 }
 
 function wrap(body: string) {
-  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#15201a">
-    <div style="background:#297542;color:#e6be31;padding:14px 20px;font-weight:800;letter-spacing:2px;border-bottom:5px solid #e6be31">FOGO<span style="color:#fff">TECH</span></div>
-    <div style="padding:20px;border:1px solid #e4e2d6;border-top:0">${body}</div></div>`;
+  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#15201a;background:#ffffff">
+    <img src="https://www.fogotech.co.uk/brand/email-header.png" width="560" alt="FogoTech" style="display:block;width:100%;max-width:560px;height:auto;border:0">
+    <div style="padding:20px 24px;border:1px solid #e4e2d6;border-top:0">${body}</div></div>`;
 }
 
 /** Company email signature (logo, phone, email, office address) – no personal names or mobiles. */

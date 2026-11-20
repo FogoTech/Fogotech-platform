@@ -1,4 +1,5 @@
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { PageHero } from "@/components/Brand";
 import { COMPANY } from "@/lib/company";
 import { getSettings } from "@/lib/site";
 
@@ -14,9 +15,8 @@ export default async function Privacy() {
   return (
     <div className="bg-white">
       <SiteHeader />
+      <PageHero title="Privacy policy" text={`How FogoTech looks after your information. Last updated ${UPDATED}.`} />
       <article className="mx-auto max-w-3xl px-4 py-12 text-[15px] leading-relaxed text-stone-700">
-        <h1 className="text-3xl font-extrabold text-brand-green-dark">Privacy policy</h1>
-        <p className="mt-2 text-sm text-brand-mute">Last updated {UPDATED}</p>
 
         <H>Who we are</H>
         <p className="mt-2">

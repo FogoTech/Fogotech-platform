@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { PageHero } from "@/components/Brand";
 import { SubmitButton } from "@/components/SubmitButton";
 import { Notice } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
@@ -26,10 +28,11 @@ async function sendEnquiry(formData: FormData) {
     message: get("message", 4000),
   });
   if (error) redirect("/contact?error=Sorry, something went wrong sending your message. Please call or email us instead.");
-  redirect("/contact?sent=1");
+  const first = (get("name", 120) ?? "").split(" ")[0];
+  redirect(`/contact?sent=1${first ? `&n=${encodeURIComponent(first)}` : ""}`);
 }
 
-export default async function Contact({ searchParams }: { searchParams: Promise<{ sent?: string; error?: string }> }) {
+export default async function Contact({ searchParams }: { searchParams: Promise<{ sent?: string; error?: string; n?: string }> }) {
   const sp = await searchParams;
   const s = await getSettings();
   const started = Date.now();
@@ -37,14 +40,7 @@ export default async function Contact({ searchParams }: { searchParams: Promise<
   return (
     <div className="bg-white">
       <SiteHeader />
-      <section className="bg-brand-green-dark text-white">
-        <div className="mx-auto max-w-6xl px-4 py-14">
-          <h1 className="text-4xl font-extrabold">Contact us</h1>
-          <p className="mt-3 max-w-2xl text-white/80">
-            Tell us about your property and what you need. We&apos;ll get back to you with advice and a quote.
-          </p>
-        </div>
-      </section>
+      <PageHero title="Contact us" text="Tell us about your property and what you need. We&apos;ll get back to you with advice and a quote." />
 
       <section className="mx-auto grid max-w-6xl gap-8 px-4 py-12 md:grid-cols-5">
         <div className="space-y-4 md:col-span-2">
@@ -80,9 +76,22 @@ export default async function Contact({ searchParams }: { searchParams: Promise<
 
         <div className="md:col-span-3">
           {sp.sent ? (
-            <div className="card">
-              <h2 className="text-xl font-bold text-brand-green-dark">Thanks, we&apos;ve got your message</h2>
-              <p className="mt-2 text-stone-600">We&apos;ll be in touch shortly.</p>
+            <div className="card border-brand-green/30 p-7">
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-green text-2xl text-white">✓</span>
+                <h2 className="text-2xl font-bold text-brand-green-dark">Thank you{sp.n ? `, ${sp.n.slice(0, 40)}` : ""}!</h2>
+              </div>
+              <p className="mt-5 whitespace-pre-line text-stone-700">
+                {(s.autoreply_message?.trim() ||
+                  "Thanks for getting in touch with FogoTech. We've received your enquiry and will get back to you as soon as possible.")
+                  .replace(/\n*Kind regards,?\s*$/i, "")}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Link href="/" className="btn-primary">Back to the homepage</Link>
+                {s.phone && <a href={`tel:${s.phone.replace(/\s/g, "")}`} className="btn-outline">Call {s.phone}</a>}
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/brand/email-signature.png" alt="FogoTech" className="mt-8 w-40" />
             </div>
           ) : (
             <form action={sendEnquiry} className="card space-y-4">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { PageHero } from "@/components/Brand";
 import { createClient } from "@/lib/supabase/server";
 import { GALLERY_CATEGORIES, galleryUrl } from "@/lib/site";
 
@@ -19,12 +20,7 @@ export default async function OurWork({ searchParams }: { searchParams: Promise<
   return (
     <div className="bg-white">
       <SiteHeader />
-      <section className="bg-brand-green-dark text-white">
-        <div className="mx-auto max-w-6xl px-4 py-14">
-          <h1 className="text-4xl font-extrabold">Our work</h1>
-          <p className="mt-3 max-w-2xl text-white/80">A selection of recent installations across CCTV, alarms, access control, networking, sound and AV.</p>
-        </div>
-      </section>
+      <PageHero title="Our work" text="A selection of recent installations across CCTV, alarms, access control, networking, sound and AV." />
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="mb-6 flex gap-2 overflow-x-auto">
           <Link href="/our-work" className={pill(!c)}>All</Link>

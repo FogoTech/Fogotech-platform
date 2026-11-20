@@ -1,9 +1,9 @@
 /** Gold and green wave, as on the FogoTech exhibition artwork. Sits at the bottom of a green section. */
-export function Wave({ className = "" }: { className?: string }) {
+export function Wave({ className = "", below = "#faf9f4" }: { className?: string; below?: string }) {
   return (
     <svg viewBox="0 0 1440 140" preserveAspectRatio="none" className={`block h-16 w-full md:h-28 ${className}`} aria-hidden="true">
       <path d="M0 40 C 360 140, 720 140, 1080 70 C 1260 35, 1380 40, 1440 60 L1440 140 L0 140 Z" fill="#e6be31" />
-      <path d="M0 62 C 360 160, 760 150, 1100 92 C 1270 62, 1390 70, 1440 86 L1440 140 L0 140 Z" fill="#faf9f4" />
+      <path d="M0 62 C 360 160, 760 150, 1100 92 C 1270 62, 1390 70, 1440 86 L1440 140 L0 140 Z" fill={below} />
       <path d="M0 74 C 380 168, 780 150, 1110 104 C 1270 82, 1390 92, 1440 104 L1440 116 C 1380 104, 1270 96, 1110 118 C 780 166, 380 180, 0 92 Z" fill="#2a9a48" />
     </svg>
   );
@@ -24,3 +24,16 @@ export const circuitBg: React.CSSProperties = {
     </svg>`
   )}")`,
 };
+
+/** Green page header with the gold/green wave, as on the homepage. */
+export function PageHero({ title, text }: { title: string; text?: string }) {
+  return (
+    <section className="bg-[#297542] text-white">
+      <div className="mx-auto max-w-6xl px-4 pb-6 pt-12 md:pt-16">
+        <h1 className="text-4xl font-extrabold">{title}</h1>
+        {text && <p className="mt-3 max-w-2xl text-white/85">{text}</p>}
+      </div>
+      <Wave below="#ffffff" />
+    </section>
+  );
+}
