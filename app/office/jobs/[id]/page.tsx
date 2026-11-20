@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { JobPhotos } from "@/components/JobPhotos";
 import { JobPhotoUploader } from "@/components/JobPhotoUploader";
+import { JobReports } from "@/components/ReportEditor";
 import { Notice, PageHeader, StatusBadge } from "@/components/ui";
 import { JOB_STATUSES, JOB_TYPES, formatDateTime } from "@/lib/labels";
 import { isoToLondonLocal, londonLocalToIso } from "@/lib/time";
@@ -177,6 +178,9 @@ export default async function OfficeJob({ params, searchParams }: {
       <h2 className="mb-3 mt-8 text-lg font-semibold">Photos</h2>
       <JobPhotos jobId={job.id} />
       <div className="mt-3"><JobPhotoUploader jobId={job.id} userId={profile.id} stages={["in_progress", "completed", "request"]} /></div>
+
+      <h2 className="mb-3 mt-8 text-lg font-semibold">Reports</h2>
+      <JobReports jobId={job.id} />
 
       <h2 className="mb-3 mt-8 text-lg font-semibold">Notes</h2>
       <ul className="space-y-2">
