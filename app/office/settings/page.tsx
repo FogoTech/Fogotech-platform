@@ -44,7 +44,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           <label className="label mt-3">Auto-reply message (optional)</label>
           <textarea className="input min-h-24" name="autoreply_message" defaultValue={s?.autoreply_message ?? ""}
             placeholder="Thanks for getting in touch with FogoTech. We've received your enquiry and one of the team will be in touch shortly." />
-          <p className="mt-1 text-xs text-stone-500">Your phone and email from above are added underneath automatically.</p>
+          <p className="mt-1 text-xs text-stone-500">Your FogoTech signature (logo, phone, email and office address) is added underneath automatically, so there is no need to type it.</p>
         </div>
         <div><SubmitButton>Save details</SubmitButton></div>
       </form>

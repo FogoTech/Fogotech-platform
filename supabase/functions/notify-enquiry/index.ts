@@ -25,9 +25,21 @@ async function send(to: string[], subject: string, html: string, replyTo?: strin
 }
 
 function wrap(body: string) {
-  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1c1917">
-    <div style="background:#133a25;color:#c9a23a;padding:14px 20px;font-weight:800;letter-spacing:1px">FOGO<span style="color:#fff">TECH</span></div>
-    <div style="padding:20px;border:1px solid #e7e5e4;border-top:0">${body}</div></div>`;
+  return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#15201a">
+    <div style="background:#297542;color:#e6be31;padding:14px 20px;font-weight:800;letter-spacing:2px;border-bottom:5px solid #e6be31">FOGO<span style="color:#fff">TECH</span></div>
+    <div style="padding:20px;border:1px solid #e4e2d6;border-top:0">${body}</div></div>`;
+}
+
+/** Company email signature (logo, phone, email, office address) – no personal names or mobiles. */
+function signature(s: { phone?: string | null; email?: string | null; address?: string | null }) {
+  const line = (label: string, v?: string | null) => (v ? `<div>${label}: ${esc(v)}</div>` : "");
+  const address = (s.address ?? "").split(/\n+/).map((x) => x.trim()).filter(Boolean).join(", ");
+  return `<table cellpadding="0" cellspacing="0" style="margin-top:16px"><tr><td style="font-family:Calibri,Arial,sans-serif;font-size:14px;line-height:1.45;color:#18803a">
+    <img src="https://www.fogotech.co.uk/brand/email-signature.png" width="160" alt="FogoTech" style="display:block;margin-bottom:8px">
+    <div style="font-weight:bold;font-size:16px">FogoTech Ltd</div>
+    ${line("Phone", s.phone)}${line("Email", s.email)}
+    ${address ? `<div style="font-weight:bold;color:#15201a">${esc(address)}</div>` : ""}
+  </td></tr></table>`;
 }
 
 function enquiryTable(e: Record<string, unknown>) {
@@ -65,7 +77,7 @@ Deno.serve(async (req) => {
       try {
       await send(to, `New website enquiry: ${e.name}${e.service ? ` (${e.service})` : ""}`,
         wrap(`<h2 style="margin-top:0">New website enquiry</h2>${enquiryTable(e)}
-          <p><a href="${link}" style="background:#1f5a3a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open in the portal</a></p>`),
+          <p><a href="${link}" style="background:#18803a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open in the portal</a></p>`),
         e.email ?? undefined);
       } catch (err) {
         // Release the claim so the alert can be retried
@@ -77,9 +89,8 @@ Deno.serve(async (req) => {
       if (settings?.autoreply_enabled && e.email) {
         const msg = settings.autoreply_message?.trim() ||
           "Thanks for getting in touch with FogoTech. We've received your enquiry and one of the team will be in touch shortly.";
-        const contact = [settings.phone && `Phone: ${esc(settings.phone)}`, settings.email && `Email: ${esc(settings.email)}`].filter(Boolean).join("<br>");
-        await send([e.email], "Thanks for your enquiry – FogoTech",
-          wrap(`<p>Hi ${esc(String(e.name).split(" ")[0])},</p><p style="white-space:pre-wrap">${esc(msg)}</p>${contact ? `<p>${contact}</p>` : ""}<p>FogoTech</p>`),
+        await send([e.email], "Thanks for your enquiry \u2013 FogoTech",
+          wrap(`<p>Hi ${esc(String(e.name).split(" ")[0])},</p><p style="white-space:pre-wrap">${esc(msg)}</p>${signature(settings)}`),
           settings.email ?? undefined);
       }
       return Response.json({ ok: true, sent: "new" });
@@ -93,7 +104,7 @@ Deno.serve(async (req) => {
       await send(to, `Enquiry assigned to you: ${e.name}`,
         wrap(`<h2 style="margin-top:0">An enquiry has been assigned to you</h2>${enquiryTable(e)}
           ${e.follow_up_on ? `<p><strong>Follow up by:</strong> ${esc(e.follow_up_on)}</p>` : ""}
-          <p><a href="${link}" style="background:#1f5a3a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open in the portal</a></p>`));
+          <p><a href="${link}" style="background:#18803a;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none">Open in the portal</a></p>`));
       return Response.json({ ok: true, sent: "assigned" });
     }
 
