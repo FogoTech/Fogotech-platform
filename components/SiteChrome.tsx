@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { getSettings, whatsappLink } from "@/lib/site";
+import { COMPANY } from "@/lib/company";
 
 export function SiteHeader() {
   return (
@@ -37,13 +38,18 @@ export async function SiteFooter() {
           {s.email && <div>✉️ <a href={`mailto:${s.email}`} className="hover:text-white">{s.email}</a></div>}
           {s.whatsapp && <div>💬 <a href={whatsappLink(s.whatsapp)} className="hover:text-white">WhatsApp us</a></div>}
           {s.opening_hours && <div className="whitespace-pre-line">🕘 {s.opening_hours}</div>}
+          {s.address && <div className="whitespace-pre-line">📍 {s.address}</div>}
         </div>
         <div className="space-y-1 md:text-right">
           <div><Link href="/contact" className="hover:text-white">Contact us</Link></div>
           <div><Link href="/our-work" className="hover:text-white">Our work</Link></div>
           <div><Link href="/login" className="hover:text-white">Client portal</Link></div>
-          <div className="pt-3 text-white/50">© {new Date().getFullYear()} FogoTech</div>
+          <div><Link href="/privacy" className="hover:text-white">Privacy policy</Link></div>
         </div>
+      </div>
+      <div className="mx-auto mt-8 max-w-6xl border-t border-white/10 px-4 pt-4 text-xs text-white/50">
+        © {new Date().getFullYear()} {COMPANY.name}. Registered in {COMPANY.registeredIn}, company number {COMPANY.number}.
+        Registered office: {COMPANY.registeredOffice}.
       </div>
     </footer>
   );
