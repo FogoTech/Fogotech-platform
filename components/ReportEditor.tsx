@@ -67,6 +67,12 @@ export async function ReportEditor({ id, sp }: { id: string; sp: { error?: strin
             <label className="label text-base">{s.title}</label>
             <p className="mb-2 text-xs text-brand-mute">{s.hint}</p>
             <textarea className="input min-h-28" name={s.key} defaultValue={(r as Record<string, unknown>)[s.key] as string ?? ""} />
+            {s.key === "recommendations" && (
+              <label className="mt-2 flex items-center gap-2 text-sm font-medium">
+                <input type="checkbox" name="no_further_action" defaultChecked={r.no_further_action} className="h-5 w-5 accent-brand-green" />
+                N/A – no further action needed
+              </label>
+            )}
           </div>
         ))}
 

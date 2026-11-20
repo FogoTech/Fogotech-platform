@@ -1,6 +1,5 @@
 // Builds a branded PDF for a job report and (optionally) emails it to the customer.
-// Called by signed-in office staff or the job's engineer. Access is checked by reading the
-// report with the caller's own login (row-level security), then the service key does the rest.
+// Called by signed-in office staff or the job's engineer (checked below), then the service key does the rest.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage } from "npm:pdf-lib@1.17.1";
 
@@ -76,16 +75,38 @@ async function buildPdf(r: Record<string, any>, photos: Photo[], settings: Recor
     }
   };
 
-  // Header image
-  try {
-    const res = await fetch("https://www.fogotech.co.uk/brand/email-header.png");
-    if (res.ok) {
-      const img = await pdf.embedPng(new Uint8Array(await res.arrayBuffer()));
-      const h = (CW * img.height) / img.width;
-      page.drawImage(img, { x: M, y: y - h, width: CW, height: h });
-      y -= h + 14;
-    }
-  } catch { /* header is optional */ }
+  // Letterhead: logo on the left, company details on the right, brand wave underneath
+  const loadPng = async (name: string) => {
+    try {
+      const res = await fetch(`https://www.fogotech.co.uk/brand/${name}`);
+      return res.ok ? await pdf.embedPng(new Uint8Array(await res.arrayBuffer())) : null;
+    } catch { return null; }
+  };
+  const [emblem, wordmark] = await Promise.all([loadPng("emblem.png"), loadPng("wordmark.png")]);
+  const headTop = y;
+  let lx = M;
+  if (emblem) { const h = 50, w = (emblem.width * h) / emblem.height; page.drawImage(emblem, { x: lx, y: headTop - h, width: w, height: h }); lx += w + 10; }
+  if (wordmark) { const h = 21, w = (wordmark.width * h) / wordmark.height; page.drawImage(wordmark, { x: lx, y: headTop - 25 - h / 2, width: w, height: h }); }
+  const addr = String(settings?.address ?? "").split(/\n+/).map((x) => x.trim()).filter(Boolean);
+  // keep the postcode on the same line as the town
+  if (addr.length > 1 && /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(addr[addr.length - 1])) addr.splice(-2, 2, `${addr[addr.length - 2]}, ${addr[addr.length - 1]}`);
+  const contact = [
+    { t: "FogoTech Ltd", f: bold, c: GREEN },
+    ...addr.map((t) => ({ t, f: font, c: INK })),
+    ...[settings?.phone ? `Tel: ${settings.phone}` : "", [settings?.email, "www.fogotech.co.uk"].filter(Boolean).join("  |  ")]
+      .filter(Boolean).map((t) => ({ t, f: font, c: INK })),
+  ];
+  let ry = headTop - 2;
+  for (const l of contact) {
+    const t = clean(l.t);
+    page.drawText(t, { x: W - M - l.f.widthOfTextAtSize(t, 8.5), y: ry - 8.5, size: 8.5, font: l.f, color: l.c });
+    ry -= 11;
+  }
+  y = Math.min(headTop - 56, ry) - 8;
+  // gold and green wave lines across the page
+  page.drawSvgPath(`M 0 6 C ${CW * 0.3} 14, ${CW * 0.6} 14, ${CW} 2`, { x: M, y, borderColor: GOLD, borderWidth: 2.2 });
+  page.drawSvgPath(`M 0 10 C ${CW * 0.3} 18, ${CW * 0.6} 18, ${CW} 6`, { x: M, y, borderColor: GREEN, borderWidth: 1.4 });
+  y -= 34;
 
   // Title row
   page.drawText("CALL-OUT REPORT", { x: M, y: y - 20, size: 20, font: bold, color: GREEN });
@@ -135,13 +156,22 @@ async function buildPdf(r: Record<string, any>, photos: Photo[], settings: Recor
     const text = String(r[s.key] ?? "").trim();
     const pics = photos.filter((p) => p.section === s.key && p.job_photos && images.has(p.job_photos.storage_path))
       .sort((a, b) => a.sort_order - b.sort_order);
-    if (!text && !pics.length) continue;
+    const naBox = s.key === "recommendations" && r.no_further_action;
+    if (!text && !pics.length && !naBox) continue;
 
     ensure(26 + 30);
     page.drawRectangle({ x: M, y: y - 22, width: CW, height: 22, color: GREEN });
     page.drawRectangle({ x: M, y: y - 25, width: CW, height: 3, color: GOLD });
     page.drawText(s.title, { x: M + 10, y: y - 15.5, size: 11.5, font: bold, color: rgb(1, 1, 1) });
     y -= 36;
+    if (naBox) {
+      // ticked box: "N/A – no further action needed"
+      ensure(20);
+      page.drawRectangle({ x: M, y: y - 12, width: 12, height: 12, borderColor: GREEN, borderWidth: 1.2 });
+      page.drawSvgPath("M 2.5 6.5 L 5 9.5 L 10 2.5", { x: M, y, borderColor: GREEN, borderWidth: 1.8 });
+      page.drawText("N/A - no further action needed", { x: M + 19, y: y - 10, size: 10.5, font: bold, color: INK });
+      y -= 22;
+    }
     if (text) paragraph(text);
 
     if (pics.length) {

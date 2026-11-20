@@ -39,6 +39,7 @@ export async function saveReport(formData: FormData) {
   const { error } = await supabase.from("job_reports").update({
     visit_date: get("visit_date") ?? undefined, engineer_name: get("engineer_name"),
     reason: get("reason"), diagnosis: get("diagnosis"), work_done: get("work_done"), recommendations: get("recommendations"),
+    no_further_action: formData.get("no_further_action") === "on",
   }).eq("id", id);
   if (error) redirect(`${back}?error=${encodeURIComponent(error.message)}`);
 
